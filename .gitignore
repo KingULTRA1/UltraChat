@@ -105,6 +105,9 @@ localStorage.json
 userData/
 conversations/
 keys/
+# Local config/user settings (make sure to ignore user-specific files)
+settings.json
+config.local.json
 
 # Test files
 test-results/
