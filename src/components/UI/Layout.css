@@ -1,0 +1,226 @@
+/* Layout Styles */
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--color-bg-primary);
+}
+
+/* Header */
+.layout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-accent-teal);
+  letter-spacing: -0.025em;
+}
+
+.logo-badge {
+  background: var(--color-accent-silver);
+  color: var(--color-bg-primary);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.main-nav {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.nav-btn {
+  padding: var(--space-sm) var(--space-lg);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-btn:hover {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-hover);
+  color: var(--color-text-primary);
+}
+
+.nav-btn.active {
+  background: var(--color-accent-teal);
+  border-color: var(--color-accent-teal);
+  color: var(--color-bg-primary);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.status-indicators {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+}
+
+.connection-status.offline .status-dot {
+  background: var(--color-warning);
+}
+
+.encryption-status {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+/* Main Content */
+.layout-main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Chat Layout */
+.chat-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.chat-sidebar {
+  width: 320px;
+  background: var(--color-bg-secondary);
+  border-right: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.chat-main {
+  flex: 1;
+  background: var(--color-bg-primary);
+}
+
+/* Settings Layout */
+.settings-layout {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: var(--space-lg);
+}
+
+/* Profile Layout */
+.profile-layout {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: var(--space-lg);
+}
+
+/* Footer */
+.layout-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border);
+  height: 40px;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.footer-left,
+.footer-center,
+.footer-right {
+  display: flex;
+  align-items: center;
+}
+
+.privacy-indicator {
+  color: var(--color-accent-teal);
+  font-weight: 500;
+}
+
+.encryption-info {
+  color: var(--color-text-secondary);
+}
+
+.version-info {
+  color: var(--color-text-muted);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .layout-header {
+    padding: var(--space-sm) var(--space-md);
+  }
+  
+  .header-center {
+    display: none;
+  }
+  
+  .chat-sidebar {
+    position: absolute;
+    left: -320px;
+    z-index: 100;
+    height: 100%;
+    transition: left 0.3s ease;
+  }
+  
+  .chat-sidebar.open {
+    left: 0;
+  }
+  
+  .layout-footer {
+    padding: var(--space-xs) var(--space-md);
+    font-size: 0.65rem;
+  }
+  
+  .footer-center {
+    display: none;
+  }
+}
