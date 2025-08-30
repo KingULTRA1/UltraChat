@@ -1,4 +1,4 @@
-# Security Policy
+# Security Policy - UltraChat v1.1.0
 
 ## Supported Versions
 
@@ -15,7 +15,7 @@ UltraChat takes security seriously. If you discover a security vulnerability, we
 
 **Please do NOT create a public GitHub issue for security vulnerabilities.**
 
-Instead, please report security issues by emailing: **security@ultrachat.app**
+Instead, please report security issues by messaging me on Twitter: **@ULTRA1**
 
 Include the following information in your report:
 
@@ -197,7 +197,7 @@ Details will be announced when the program launches.
 ## Contact Information
 
 For security-related questions or concerns:
-- **Email**: security@ultrachat.app
+- **Twitter**: @ULTRA1
 - **PGP Key**: Available on request
 - **Response Time**: Within 24 hours
 
