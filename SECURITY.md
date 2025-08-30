@@ -4,6 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 1.1.x   | :white_check_mark: |
 | 1.0.x   | :white_check_mark: |
 | < 1.0   | :x:                |
 
@@ -15,15 +16,19 @@ UltraChat takes security seriously. If you discover a security vulnerability, we
 
 **Please do NOT create a public GitHub issue for security vulnerabilities.**
 
-Instead, please report security issues by messaging me on Twitter: **@ULTRA1**
+Instead, please report security issues privately through:
 
-Include the following information in your report:
+- **GitHub Security Advisories**: Use the private vulnerability reporting feature
+- **GitHub Issues**: For non-security bugs and features only
+- **GitHub Discussions**: For community-related questions
+
+Please include the following information in your report:
 
 - **Description** of the vulnerability
 - **Steps to reproduce** the issue
 - **Potential impact** assessment
 - **Suggested fix** (if you have one)
-- **Your contact information**
+- **Your contact information** (if you wish)
 
 ### What to Expect
 
@@ -35,7 +40,6 @@ Include the following information in your report:
 ### Disclosure Policy
 
 - We will investigate and respond to legitimate reports
-- We will not pursue legal action against good-faith security researchers
 - We will coordinate disclosure timing with the reporter
 - We will credit reporters in our security advisories (unless they prefer anonymity)
 
@@ -132,21 +136,21 @@ UltraChat assumes:
 
 ### Classification
 
-**Critical**: Immediate threat to user data or privacy
-- Response time: Within 2 hours
-- Public disclosure: After fix is deployed
+**Critical**: Immediate threat to user data or privacy  
+- Response time: Within 2 hours  
+- Public disclosure: After fix is deployed  
 
-**High**: Significant security vulnerability
-- Response time: Within 24 hours
-- Public disclosure: Within 30 days
+**High**: Significant security vulnerability  
+- Response time: Within 24 hours  
+- Public disclosure: Within 30 days  
 
-**Medium**: Minor security issue
-- Response time: Within 72 hours
-- Public disclosure: Next regular update
+**Medium**: Minor security issue  
+- Response time: Within 72 hours  
+- Public disclosure: Next regular update  
 
-**Low**: Security improvement opportunity
-- Response time: Within 1 week
-- Public disclosure: As appropriate
+**Low**: Security improvement opportunity  
+- Response time: Within 1 week  
+- Public disclosure: As appropriate  
 
 ### Response Process
 
@@ -197,9 +201,9 @@ Details will be announced when the program launches.
 ## Contact Information
 
 For security-related questions or concerns:
-- **Twitter**: @ULTRA1
-- **PGP Key**: Available on request
-- **Response Time**: Within 24 hours
+- **GitHub Security Advisories**: Use the private vulnerability reporting feature
+- **GitHub Issues**: For non-security bugs and features only
+- **GitHub Discussions**: For community-related questions
 
 For general questions:
 - **GitHub Issues**: For non-security bugs and features

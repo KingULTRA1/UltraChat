@@ -99,13 +99,28 @@ temp/
 *.sln
 *.sw?
 
+# Local config/user settings (make sure to ignore user-specific files)
+settings.json
+config.local.json
+>>>>>>> fbc0b147594d7e709c50a95e7c1a32d56c36a7ae
 # UltraChat specific
 # Don't commit local storage data
 localStorage.json
 userData/
 conversations/
 keys/
-SECURITY.md   # Do not push the updated local security contact info to GitHub
+
+# Ignore local security file with private contact info (not for GitHub)
+local_security.md
+
+# Local config/user settings (make sure to ignore user-specific files)
+settings.json
+config.local.json
+=======
+# Local config/user settings (make sure to ignore user-specific files)
+settings.json
+config.local.json
+>>>>>>> fbc0b147594d7e709c50a95e7c1a32d56c36a7ae
 
 # Test files
 test-results/

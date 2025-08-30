@@ -332,8 +332,8 @@ const SettingsPanel = ({
               
               <div className="about-content">
                 <div className="app-info">
-                  <h4>UltraChat v1.0.0</h4>
-                  <p>Privacy-first messaging application</p>
+                  <h4>UltraChat v1.1.0</h4>
+                  <p>Privacy-first messaging application offering end-to-end encryption, zero tracking, and cross-platform support.</p>
                 </div>
 
                 <div className="features-grid">
@@ -356,9 +356,24 @@ const SettingsPanel = ({
                 </div>
 
                 <div className="links">
-                  <button className="link-btn">GitHub Repository</button>
-                  <button className="link-btn">Privacy Policy</button>
-                  <button className="link-btn">Documentation</button>
+                  <button 
+                    className="link-btn" 
+                    onClick={() => window.open('https://github.com/KingULTRA1/UltraChat', '_blank')}
+                  >
+                    GitHub Repository
+                  </button>
+                  <button 
+                    className="link-btn"
+                    onClick={() => window.open('https://ultrachat.app/privacy-policy', '_blank')}
+                  >
+                    Privacy Policy
+                  </button>
+                  <button 
+                    className="link-btn"
+                    onClick={() => window.open('https://ultrachat.app/docs', '_blank')}
+                  >
+                    Documentation
+                  </button>
                 </div>
               </div>
             </div>

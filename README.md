@@ -57,7 +57,7 @@ UltraChat is a modern, privacy-focused messaging application built with React, f
 ### Installation
 Clone the repository:  
 ```bash
-git clone https://github.com/yourusername/ultrachat.git
+git clone https://github.com/KingULTRA1/UltraChat.git
 cd ultrachat
 Install dependencies:
 

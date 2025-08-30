@@ -295,25 +295,37 @@ export const DEFAULT_SETTINGS = {
     enabled: true,
     sounds: true,
     desktop: true,
-    privacy: true
+    privacy: true,
+    vibration: false
   },
   privacy: {
     analytics: false,
     tracking: false,
     crashReports: false,
-    metadataCollection: false
+    metadataCollection: false,
+    anonymousMode: true,
+    secureMessaging: true,
+    trackingProtection: true,
+    localStorageOnly: true
   },
   security: {
     twoFactor: false,
     sessionTimeout: 30,
     autoLock: true,
-    keyVerification: true
+    keyVerification: true,
+    endToEndEncryption: 'AES-256-GCM',
+    forwardSecrecy: true,
+    twoFactorAuthentication: true
   },
   messaging: {
     readReceipts: true,
     typingIndicators: true,
     messagePreview: false,
     autoDownload: false
+  },
+  appearance: {
+    theme: 'dark',
+    colorScheme: 'blue'
   }
 }
 
