@@ -1,4 +1,4 @@
-# UltraChat 🚀💬
+# UltraChat v1.1.0 🚀💬
 
 UltraChat is a modern, privacy-focused messaging application built with React, featuring end-to-end encryption, multiple profile modes, Web of Trust, and cross-service messaging capabilities.
 

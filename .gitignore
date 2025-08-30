@@ -105,6 +105,7 @@ localStorage.json
 userData/
 conversations/
 keys/
+SECURITY.md   # Do not push the updated local security contact info to GitHub
 
 # Test files
 test-results/

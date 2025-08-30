@@ -1,4 +1,4 @@
-# Contributing to UltraChat
+# Contributing to UltraChat v1.1.0
 
 Thank you for your interest in contributing to UltraChat! We welcome contributions from the community to help make this privacy-first messaging application even better.
 

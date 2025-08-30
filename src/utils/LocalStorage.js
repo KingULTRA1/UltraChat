@@ -164,30 +164,196 @@ class LocalStorage {
     await this.store('conversations', updated)
   }
 
-  // Store conversation metadata
-  async storeConversation(conversation) {
-    const conversations = await this.retrieve('conversations', [])
-    const existingIndex = conversations.findIndex(c => c.id === conversation.id)
+  // User data specific methods (kept locally, never synced)
+  async storeUserData(userData) {
+    // Store user-specific data that should never leave the device
+    const userDataKey = 'user_data_local'
+    const timestamp = new Date().toISOString()
     
-    if (existingIndex >= 0) {
-      conversations[existingIndex] = {
-        ...conversations[existingIndex],
-        ...conversation,
-        updatedAt: new Date().toISOString()
-      }
-    } else {
-      conversations.push({
-        ...conversation,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      })
+    const dataPackage = {
+      ...userData,
+      lastModified: timestamp,
+      version: '1.0',
+      deviceId: this.getOrCreateDeviceId()
     }
-
-    return await this.store('conversations', conversations)
+    
+    return await this.store(userDataKey, dataPackage, true)
   }
 
-  async getConversations() {
-    return await this.retrieve('conversations', [])
+  async getUserData() {
+    const userDataKey = 'user_data_local'
+    const defaultUserData = {
+      preferences: {
+        theme: 'obsidian',
+        blueFilter: true,
+        notifications: true
+      },
+      profile: {
+        currentMode: 'Basic',
+        setupCompleted: false
+      },
+      privacy: {
+        analyticsOptOut: true,
+        trackingOptOut: true,
+        localOnlyMode: true
+      }
+    }
+    
+    return await this.retrieve(userDataKey, defaultUserData)
+  }
+
+  // Generate or retrieve a unique device identifier
+  getOrCreateDeviceId() {
+    let deviceId = localStorage.getItem('ultrachat_device_id')
+    if (!deviceId) {
+      deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+      localStorage.setItem('ultrachat_device_id', deviceId)
+    }
+    return deviceId
+  }
+
+  // Enhanced profile storage with privacy controls
+  async storeProfileData(profileData, mode) {
+    const profileKey = `profile_${mode.toLowerCase()}_local`
+    
+    // Add privacy metadata
+    const enhancedProfile = {
+      ...profileData,
+      mode,
+      localOnly: true,
+      lastUpdated: new Date().toISOString(),
+      deviceId: this.getOrCreateDeviceId(),
+      privacyLevel: this.getPrivacyLevel(mode)
+    }
+    
+    return await this.store(profileKey, enhancedProfile, true)
+  }
+
+  async getProfileData(mode) {
+    const profileKey = `profile_${mode.toLowerCase()}_local`
+    return await this.retrieve(profileKey, null)
+  }
+
+  // Get privacy level based on profile mode
+  getPrivacyLevel(mode) {
+    const privacyLevels = {
+      'Basic': 'medium',
+      'Public': 'low',
+      'Anon': 'maximum',
+      'Ultra': 'high'
+    }
+    return privacyLevels[mode] || 'medium'
+  }
+
+  // Store conversation data with enhanced privacy
+  async storeConversationData(conversationId, data) {
+    const convKey = `conversation_${conversationId}_local`    
+    const enhancedData = {
+      ...data,
+      localOnly: true,
+      encrypted: true,
+      lastAccessed: new Date().toISOString(),
+      deviceId: this.getOrCreateDeviceId()
+    }
+    
+    return await this.store(convKey, enhancedData, true)
+  }
+
+  async getConversationData(conversationId) {
+    const convKey = `conversation_${conversationId}_local`
+    return await this.retrieve(convKey, null)
+  }
+
+  // Export user data for local backup (excludes sensitive keys)
+  async exportUserDataLocally() {
+    const userData = await this.getUserData()
+    const profiles = {}
+    const conversations = {}
+    
+    // Export all profile modes
+    const modes = ['Basic', 'Public', 'Anon', 'Ultra']
+    for (const mode of modes) {
+      const profile = await this.getProfileData(mode)
+      if (profile) {
+        profiles[mode] = profile
+      }
+    }
+    
+    // Export conversation metadata (not messages for privacy)
+    const conversationList = await this.getConversations()
+    for (const conv of conversationList) {
+      const convData = await this.getConversationData(conv.id)
+      if (convData) {
+        // Remove sensitive message content
+        conversations[conv.id] = {
+          ...convData,
+          messages: [], // Don't export actual messages
+          messageCount: convData.messages?.length || 0
+        }
+      }
+    }
+    
+    return {
+      version: '1.0',
+      exportDate: new Date().toISOString(),
+      deviceId: this.getOrCreateDeviceId(),
+      userData,
+      profiles,
+      conversations,
+      localOnly: true,
+      privacyNote: 'This export contains local data only and should never be shared'
+    }
+  }
+
+  // Import user data from local backup
+  async importUserDataLocally(exportData) {
+    if (!exportData.localOnly) {
+      throw new Error('Only local-only exports can be imported')
+    }
+    
+    const results = {
+      userData: false,
+      profiles: 0,
+      conversations: 0,
+      errors: []
+    }
+    
+    try {
+      // Import user data
+      if (exportData.userData) {
+        await this.storeUserData(exportData.userData)
+        results.userData = true
+      }
+      
+      // Import profiles
+      if (exportData.profiles) {
+        for (const [mode, profile] of Object.entries(exportData.profiles)) {
+          try {
+            await this.storeProfileData(profile, mode)
+            results.profiles++
+          } catch (error) {
+            results.errors.push(`Profile ${mode}: ${error.message}`)
+          }
+        }
+      }
+      
+      // Import conversations
+      if (exportData.conversations) {
+        for (const [id, conv] of Object.entries(exportData.conversations)) {
+          try {
+            await this.storeConversationData(id, conv)
+            results.conversations++
+          } catch (error) {
+            results.errors.push(`Conversation ${id}: ${error.message}`)
+          }
+        }
+      }
+      
+    } catch (error) {
+      results.errors.push(`Import failed: ${error.message}`)
+    }
+    
+    return results
   }
 
   // Profile storage

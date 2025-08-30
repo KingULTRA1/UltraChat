@@ -1,88 +1,93 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { UserDataManager } from '../../services/Settings'
+import { PROFILE_MODES } from '../../utils/Constants'
 import './ProfileModal.css'
 
 const ProfileModal = ({ onClose }) => {
-  const [activeMode, setActiveMode] = useState('Basic')
-  const [profile, setProfile] = useState({
-    basic: {
-      displayName: 'John Doe',
-      bio: 'Privacy advocate and tech enthusiast',
-      avatar: null
-    },
-    public: {
-      displayName: 'John Doe',
-      bio: 'Privacy advocate and tech enthusiast',
-      socialHandles: {
-        twitter: '@johndoe',
-        github: 'johndoe',
-        website: 'johndoe.dev'
-      },
-      showSocialHandles: true,
-      avatar: null
-    },
-    anon: {
-      displayName: 'Anonymous',
-      bio: '',
-      avatar: null
-    },
-    ultra: {
-      displayName: 'John Doe',
-      bio: 'Privacy advocate and tech enthusiast',
-      socialHandles: {
-        twitter: '@johndoe',
-        github: 'johndoe',
-        website: 'johndoe.dev',
-        ultrachat: '@johndoe_ultra'
-      },
-      showSocialHandles: true,
-      endorsements: 15,
-      trustScore: 95,
-      verified: true,
-      avatar: null
-    }
-  })
+  const [userDataManager] = useState(new UserDataManager())
+  const [activeMode, setActiveMode] = useState(PROFILE_MODES.BASIC)
+  const [profileData, setProfileData] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  const [endorsements] = useState([
-    {
-      id: '1',
-      from: 'Alice Cooper',
-      message: 'Highly trustworthy and reliable',
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      trustScore: 92
-    },
-    {
-      id: '2',
-      from: 'Bob Smith',
-      message: 'Great privacy advocate',
-      timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-      trustScore: 87
+  // Initialize component and load user data
+  useEffect(() => {
+    initializeProfile()
+  }, [])
+
+  // Load profile data when mode changes
+  useEffect(() => {
+    if (userDataManager.initialized) {
+      loadProfileForMode(activeMode)
     }
-  ])
+  }, [activeMode])
+
+  const initializeProfile = async () => {
+    try {
+      setLoading(true)
+      await userDataManager.initialize()
+      
+      // Get current active mode
+      const currentMode = await userDataManager.getCurrentProfileMode()
+      setActiveMode(currentMode)
+      
+      // Load profile data for current mode
+      await loadProfileForMode(currentMode)
+      
+    } catch (error) {
+      console.error('Failed to initialize profile:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadProfileForMode = async (mode) => {
+    try {
+      const profile = await userDataManager.storage.getProfileData(mode)
+      
+      if (profile) {
+        setProfileData(profile)
+      } else {
+        // Create default profile if none exists
+        const defaultProfile = await userDataManager.createDefaultProfile(mode)
+        setProfileData(defaultProfile)
+      }
+    } catch (error) {
+      console.error(`Failed to load profile for mode ${mode}:`, error)
+      // Set empty default profile
+      setProfileData({
+        displayName: mode === PROFILE_MODES.ANON ? 'Anonymous' : 'User',
+        bio: '',
+        avatar: null,
+        mode
+      })
+    }
+  }
 
   const modes = [
     {
-      id: 'Basic',
+      id: PROFILE_MODES.BASIC,
       name: 'Basic',
       description: 'Minimal profile information',
       icon: '👤',
       color: 'var(--color-mode-basic)'
     },
     {
-      id: 'Public',
+      id: PROFILE_MODES.PUBLIC,
       name: 'Public',
       description: 'Public profile with social handles',
       icon: '🌐',
       color: 'var(--color-mode-public)'
     },
     {
-      id: 'Anon',
+      id: PROFILE_MODES.ANON,
       name: 'Anonymous',
       description: 'Complete anonymity',
       icon: '🥷',
       color: 'var(--color-mode-anon)'
     },
     {
-      id: 'Ultra',
+      id: PROFILE_MODES.ULTRA,
       name: 'Ultra',
       description: 'Enhanced features with Web of Trust',
       icon: '⚡',
@@ -90,30 +95,99 @@ const ProfileModal = ({ onClose }) => {
     }
   ]
 
-  const handleProfileUpdate = (field, value) => {
-    setProfile(prev => ({
+  const handleModeSwitch = async (newMode) => {
+    if (newMode === activeMode) return
+    
+    try {
+      setLoading(true)
+      
+      // Save current profile before switching
+      await handleSaveProfile()
+      
+      // Switch to new mode
+      await userDataManager.switchProfileMode(newMode)
+      setActiveMode(newMode)
+      
+      // Load profile for new mode
+      await loadProfileForMode(newMode)
+      
+    } catch (error) {
+      console.error('Failed to switch profile mode:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleProfileUpdate = async (field, value) => {
+    // Update local state immediately for UI responsiveness
+    setProfileData(prev => ({
       ...prev,
-      [activeMode.toLowerCase()]: {
-        ...prev[activeMode.toLowerCase()],
-        [field]: value
-      }
+      [field]: value,
+      lastUpdated: new Date().toISOString()
     }))
   }
 
-  const handleSocialHandleUpdate = (platform, value) => {
-    setProfile(prev => ({
+  const handleSocialHandleUpdate = async (platform, value) => {
+    setProfileData(prev => ({
       ...prev,
-      [activeMode.toLowerCase()]: {
-        ...prev[activeMode.toLowerCase()],
-        socialHandles: {
-          ...prev[activeMode.toLowerCase()].socialHandles,
-          [platform]: value
-        }
-      }
+      socialHandles: {
+        ...prev.socialHandles,
+        [platform]: value
+      },
+      lastUpdated: new Date().toISOString()
     }))
   }
 
-  const currentProfile = profile[activeMode.toLowerCase()]
+  const handleSaveProfile = async () => {
+    try {
+      setSaving(true)
+      
+      // Save profile data to local storage
+      await userDataManager.storage.storeProfileData(profileData, activeMode)
+      
+      // Show success message (you could add a toast notification here)
+      console.log('Profile saved successfully')
+      
+    } catch (error) {
+      console.error('Failed to save profile:', error)
+      // Show error message (you could add error handling UI here)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Handle profile reset
+  const handleResetProfile = async () => {
+    try {
+      setLoading(true)
+      await loadProfileForMode(activeMode)
+    } catch (error) {
+      console.error('Failed to reset profile:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="profile-modal">
+        <div className="profile-header">
+          <h2>Loading Profile...</h2>
+          <button className="close-btn" onClick={onClose} title="Close Profile">
+            ✕
+          </button>
+        </div>
+        <div className="profile-content">
+          <div className="loading-indicator">
+            <p>Loading your profile data...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const currentProfile = profileData
 
   return (
     <div className="profile-modal">
@@ -133,8 +207,9 @@ const ProfileModal = ({ onClose }) => {
               <button
                 key={mode.id}
                 className={`mode-card ${activeMode === mode.id ? 'active' : ''}`}
-                onClick={() => setActiveMode(mode.id)}
+                onClick={() => handleModeSwitch(mode.id)}
                 style={{ borderColor: activeMode === mode.id ? mode.color : 'var(--color-border)' }}
+                disabled={loading}
               >
                 <div className="mode-icon" style={{ color: mode.color }}>
                   {mode.icon}
@@ -183,7 +258,8 @@ const ProfileModal = ({ onClose }) => {
                 value={currentProfile.displayName}
                 onChange={(e) => handleProfileUpdate('displayName', e.target.value)}
                 className="input"
-                disabled={activeMode === 'Anon'}
+                disabled={activeMode === PROFILE_MODES.ANON || loading}
+                placeholder={activeMode === PROFILE_MODES.ANON ? 'Anonymous' : 'Enter your display name'}
               />
             </div>
 
@@ -194,21 +270,22 @@ const ProfileModal = ({ onClose }) => {
                 onChange={(e) => handleProfileUpdate('bio', e.target.value)}
                 className="input textarea"
                 rows="3"
-                disabled={activeMode === 'Anon'}
-                placeholder={activeMode === 'Anon' ? 'Anonymous profiles have no bio' : 'Tell others about yourself...'}
+                disabled={activeMode === PROFILE_MODES.ANON || loading}
+                placeholder={activeMode === PROFILE_MODES.ANON ? 'Anonymous profiles have no bio' : 'Tell others about yourself...'}
               />
             </div>
 
             {/* Social Handles (Public & Ultra modes) */}
-            {(activeMode === 'Public' || activeMode === 'Ultra') && (
+            {(activeMode === PROFILE_MODES.PUBLIC || activeMode === PROFILE_MODES.ULTRA) && (
               <div className="social-handles-section">
                 <h4>Social Handles</h4>
                 <div className="form-group">
                   <label>
                     <input
                       type="checkbox"
-                      checked={currentProfile.showSocialHandles}
+                      checked={currentProfile.showSocialHandles || false}
                       onChange={(e) => handleProfileUpdate('showSocialHandles', e.target.checked)}
+                      disabled={loading}
                     />
                     Show social handles publicly
                   </label>
@@ -224,6 +301,7 @@ const ProfileModal = ({ onClose }) => {
                         onChange={(e) => handleSocialHandleUpdate('twitter', e.target.value)}
                         className="input"
                         placeholder="@username"
+                        disabled={loading}
                       />
                     </div>
                     
@@ -235,6 +313,7 @@ const ProfileModal = ({ onClose }) => {
                         onChange={(e) => handleSocialHandleUpdate('github', e.target.value)}
                         className="input"
                         placeholder="username"
+                        disabled={loading}
                       />
                     </div>
                     
@@ -246,10 +325,11 @@ const ProfileModal = ({ onClose }) => {
                         onChange={(e) => handleSocialHandleUpdate('website', e.target.value)}
                         className="input"
                         placeholder="your-website.com"
+                        disabled={loading}
                       />
                     </div>
 
-                    {activeMode === 'Ultra' && (
+                    {activeMode === PROFILE_MODES.ULTRA && (
                       <div className="form-group">
                         <label>UltraChat Handle</label>
                         <input
@@ -258,6 +338,7 @@ const ProfileModal = ({ onClose }) => {
                           onChange={(e) => handleSocialHandleUpdate('ultrachat', e.target.value)}
                           className="input"
                           placeholder="@your_handle"
+                          disabled={loading}
                         />
                       </div>
                     )}
@@ -267,17 +348,17 @@ const ProfileModal = ({ onClose }) => {
             )}
 
             {/* Ultra Mode Features */}
-            {activeMode === 'Ultra' && (
+            {activeMode === PROFILE_MODES.ULTRA && (
               <div className="ultra-features">
                 <h4>Ultra Features</h4>
                 
                 <div className="stats-grid">
                   <div className="stat-card">
-                    <div className="stat-value">{currentProfile.trustScore}%</div>
+                    <div className="stat-value">{currentProfile.trustScore || 0}%</div>
                     <div className="stat-label">Trust Score</div>
                   </div>
                   <div className="stat-card">
-                    <div className="stat-value">{currentProfile.endorsements}</div>
+                    <div className="stat-value">{currentProfile.endorsements?.length || 0}</div>
                     <div className="stat-label">Endorsements</div>
                   </div>
                   <div className="stat-card">
@@ -289,20 +370,24 @@ const ProfileModal = ({ onClose }) => {
                 <div className="endorsements-section">
                   <h5>Recent Endorsements</h5>
                   <div className="endorsements-list">
-                    {endorsements.map(endorsement => (
-                      <div key={endorsement.id} className="endorsement-item">
-                        <div className="endorsement-header">
-                          <span className="endorser-name">{endorsement.from}</span>
-                          <span className="endorsement-date">
-                            {endorsement.timestamp.toLocaleDateString()}
-                          </span>
+                    {currentProfile.endorsements && currentProfile.endorsements.length > 0 ? (
+                      currentProfile.endorsements.slice(0, 3).map((endorsement, index) => (
+                        <div key={endorsement.id || index} className="endorsement-item">
+                          <div className="endorsement-header">
+                            <span className="endorser-name">{endorsement.from || 'Anonymous'}</span>
+                            <span className="endorsement-date">
+                              {endorsement.timestamp ? new Date(endorsement.timestamp).toLocaleDateString() : 'Recent'}
+                            </span>
+                          </div>
+                          <p className="endorsement-message">{endorsement.message || 'Endorsed this user'}</p>
+                          <div className="endorsement-score">
+                            Trust Score: {endorsement.trustScore || 0}%
+                          </div>
                         </div>
-                        <p className="endorsement-message">{endorsement.message}</p>
-                        <div className="endorsement-score">
-                          Trust Score: {endorsement.trustScore}%
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="no-endorsements">No endorsements yet. Request endorsements from trusted contacts.</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -310,10 +395,28 @@ const ProfileModal = ({ onClose }) => {
 
             {/* Actions */}
             <div className="profile-actions">
-              <button className="btn btn-primary">Save Changes</button>
-              <button className="btn">Reset</button>
-              {activeMode === 'Ultra' && (
-                <button className="btn">Request Endorsement</button>
+              <button 
+                className="btn btn-primary" 
+                onClick={handleSaveProfile}
+                disabled={saving || loading}
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+              <button 
+                className="btn" 
+                onClick={handleResetProfile}
+                disabled={loading}
+              >
+                Reset
+              </button>
+              {activeMode === PROFILE_MODES.ULTRA && (
+                <button 
+                  className="btn"
+                  onClick={() => alert('Endorsement system coming soon!')}
+                  disabled={loading}
+                >
+                  Request Endorsement
+                </button>
               )}
             </div>
           </div>

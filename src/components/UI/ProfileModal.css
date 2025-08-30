@@ -314,6 +314,13 @@
   font-weight: 600;
 }
 
+.no-endorsements {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: var(--space-lg);
+}
+
 /* Actions */
 .profile-actions {
   display: flex;

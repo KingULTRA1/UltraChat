@@ -2,11 +2,24 @@
 
 export const APP_CONFIG = {
   name: 'UltraChat',
-  version: '1.0.0',
-  description: 'Privacy-First Messaging Application',
+  version: '1.1.0',
+  description: 'UltraChat is a privacy-first messaging application offering end-to-end encryption, zero tracking, and cross-platform support.',
   author: 'UltraChat Team',
-  repository: 'https://github.com/yourusername/ultrachat',
-  supportEmail: 'support@ultrachat.app'
+  repository: 'https://github.com/KingULTRA1/UltraChat',
+  supportEmail: 'support@ultrachat.app',
+  features: [
+    'End-to-End Encryption',
+    'Zero Tracking', 
+    'Cross-Platform Support',
+    'Open Source',
+    'Web of Trust',
+    'Anonymous Mode'
+  ],
+  links: {
+    githubRepo: 'https://github.com/KingULTRA1/UltraChat',
+    privacyPolicy: 'https://ultrachat.app/privacy-policy',
+    documentation: 'https://ultrachat.app/docs'
+  }
 }
 
 export const ENCRYPTION_CONSTANTS = {
