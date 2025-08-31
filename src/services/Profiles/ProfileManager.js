@@ -1,11 +1,25 @@
 // Profile Management System
 // Handles different profile modes: Basic, Public, Anon, Ultra
 
+import LocalStorage from '../../utils/LocalStorage.js'
+
 class ProfileManager {
   constructor() {
+    this.storage = new LocalStorage()
     this.currentProfile = null
     this.profiles = this.loadProfiles()
     this.activeMode = localStorage.getItem('ultrachat-profile-mode') || 'Basic'
+    this.initializeStorage()
+  }
+
+  // Initialize secure storage
+  async initializeStorage() {
+    try {
+      await this.storage.initialize()
+      console.log('Profile storage initialized')
+    } catch (error) {
+      console.error('Profile storage initialization failed:', error)
+    }
   }
 
   // Load profiles from local storage
@@ -79,13 +93,24 @@ class ProfileManager {
     }
   }
 
-  // Save profiles to local storage
+  // Save profiles to local storage with error handling
   saveProfiles() {
     try {
+      // Use both localStorage and our secure storage
       localStorage.setItem('ultrachat-profiles', JSON.stringify(this.profiles))
       localStorage.setItem('ultrachat-profile-mode', this.activeMode)
+      
+      // Also save to secure storage if available
+      if (this.storage && this.storage.initialized) {
+        this.storage.store('profiles_secure', this.profiles, true)
+        this.storage.store('active_mode_secure', this.activeMode, false)
+      }
+      
+      console.log('Profiles saved successfully:', this.activeMode)
+      return true
     } catch (error) {
       console.error('Failed to save profiles:', error)
+      return false
     }
   }
 
@@ -111,7 +136,7 @@ class ProfileManager {
     return this.currentProfile
   }
 
-  // Update profile information
+  // Update profile information with enhanced persistence
   updateProfile(mode, updates) {
     const profileKey = mode.toLowerCase()
     if (!this.profiles[profileKey]) {
@@ -127,7 +152,17 @@ class ProfileManager {
       lastUpdated: new Date().toISOString()
     }
 
-    this.saveProfiles()
+    // Save immediately with verification
+    const saveSuccess = this.saveProfiles()
+    if (!saveSuccess) {
+      console.error('Profile save failed, attempting recovery')
+      // Attempt to save to localStorage as fallback
+      try {
+        localStorage.setItem('ultrachat-profiles-backup', JSON.stringify(this.profiles))
+      } catch (error) {
+        console.error('Backup save also failed:', error)
+      }
+    }
     
     // If updating current profile, refresh it
     if (mode === this.activeMode) {
@@ -135,6 +170,7 @@ class ProfileManager {
       this.emitProfileChange()
     }
 
+    console.log('Profile updated:', mode, sanitizedUpdates)
     return this.profiles[profileKey]
   }
 

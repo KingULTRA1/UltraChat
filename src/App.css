@@ -8,11 +8,49 @@
   font-family: var(--font-family-sans);
 }
 
-/* Theme variations */
+/* Ultra-Enhanced Obsidian Theme - v1.2.3 */
 .app[data-theme="obsidian"] {
-  --color-bg-primary: #0d1117;
-  --color-bg-secondary: #161b22;
-  --color-bg-tertiary: #21262d;
+  --color-bg-primary: #0a0c10;
+  --color-bg-secondary: #12151a;
+  --color-bg-tertiary: #1c2128;
+  --color-bg-quaternary: #262c36;
+  --color-bg-hover: #2d3440;
+  --color-text-primary: #f0f6fc !important;
+  --color-text-secondary: #e6edf3 !important;
+  --color-text-muted: #b1bac4 !important;
+  --color-border: #30363d;
+  --color-border-muted: #21262d;
+  --color-accent-primary: #58a6ff;
+  --color-accent-teal: #00d4aa;
+  --color-accent-teal-light: #26ffda;
+  --color-accent-teal-dark: #00b494;
+  --color-success: #3fb950;
+  --color-warning: #f85149;
+  --color-error: #ff6b6b;
+  --color-accent-silver: #f0f6fc;
+  --color-accent-silver-light: #ffffff;
+  --color-accent-silver-dark: #c9d1d9;
+  --color-accent-silver-ultra-light: rgba(240, 246, 252, 0.1);
+  --color-accent-silver-alpha: rgba(240, 246, 252, 0.2);
+  --color-accent-teal-alpha: rgba(0, 212, 170, 0.2);
+  --color-accent-teal-ultra-light: rgba(0, 212, 170, 0.05);
+  --color-metallic: linear-gradient(135deg, #f0f6fc, #c9d1d9, #f0f6fc);
+  --color-obsidian-gradient: linear-gradient(135deg, #0a0c10, #12151a, #1c2128);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.7);
+  --shadow-glow-teal: 0 0 20px rgba(0, 212, 170, 0.4);
+  --shadow-glow-teal-intense: 0 0 30px rgba(0, 212, 170, 0.6);
+  --shadow-glow-success: 0 0 20px rgba(63, 185, 80, 0.4);
+  --shadow-glow-success-intense: 0 0 30px rgba(63, 185, 80, 0.6);
+  --shadow-glow-error: 0 0 20px rgba(255, 107, 107, 0.4);
+  --shadow-glow-error-intense: 0 0 30px rgba(255, 107, 107, 0.6);
+  --shadow-md-reverse: 0 -4px 8px rgba(0, 0, 0, 0.5);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 }
 
 .app[data-theme="dark"] {

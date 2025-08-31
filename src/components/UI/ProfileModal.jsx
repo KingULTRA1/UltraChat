@@ -3,16 +3,26 @@ import { UserDataManager } from '../../services/Settings'
 import { PROFILE_MODES } from '../../utils/Constants'
 import './ProfileModal.css'
 
-const ProfileModal = ({ onClose }) => {
+// 🚀 UltraChat v1.2.3 Alpha - PRIVACY FIRST
+
+const ProfileModal = ({ onClose, currentUser, trustManager }) => {
   const [userDataManager] = useState(new UserDataManager())
   const [activeMode, setActiveMode] = useState(PROFILE_MODES.BASIC)
   const [profileData, setProfileData] = useState({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  
+  // Enhanced v1.2.3 Alpha state
+  const [cryptoWallets, setCryptoWallets] = useState({})
+  const [botConnections, setBotConnections] = useState({})
+  const [trustStats, setTrustStats] = useState({})
+  const [auditStats, setAuditStats] = useState({})
+  const [tipStats, setTipStats] = useState({})
 
-  // Initialize component and load user data
+  // Initialize component and load user data with v1.2.3 Alpha features
   useEffect(() => {
     initializeProfile()
+    loadEnhancedProfileData()
   }, [])
 
   // Load profile data when mode changes
@@ -33,6 +43,9 @@ const ProfileModal = ({ onClose }) => {
       
       // Load profile data for current mode
       await loadProfileForMode(currentMode)
+      
+      // Load v1.2.3 Alpha enhanced data
+      await loadEnhancedProfileData()
       
     } catch (error) {
       console.error('Failed to initialize profile:', error)
@@ -59,7 +72,11 @@ const ProfileModal = ({ onClose }) => {
         displayName: mode === PROFILE_MODES.ANON ? 'Anonymous' : 'User',
         bio: '',
         avatar: null,
-        mode
+        mode,
+        socialHandles: {},
+        trustScore: mode === PROFILE_MODES.ULTRA ? 0 : undefined,
+        endorsements: mode === PROFILE_MODES.ULTRA ? [] : undefined,
+        verified: false
       })
     }
   }
@@ -89,7 +106,7 @@ const ProfileModal = ({ onClose }) => {
     {
       id: PROFILE_MODES.ULTRA,
       name: 'Ultra',
-      description: 'Enhanced features with Web of Trust',
+      description: 'Enhanced features with Web of Trust + Crypto Tipping',
       icon: '⚡',
       color: 'var(--color-mode-ultra)'
     }
@@ -145,14 +162,30 @@ const ProfileModal = ({ onClose }) => {
       // Save profile data to local storage
       await userDataManager.storage.storeProfileData(profileData, activeMode)
       
-      // Show success message (you could add a toast notification here)
+      // Show success message
       console.log('Profile saved successfully')
       
     } catch (error) {
       console.error('Failed to save profile:', error)
-      // Show error message (you could add error handling UI here)
     } finally {
       setSaving(false)
+    }
+  }
+
+  // Handle avatar upload
+  const handleAvatarUpload = async (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      try {
+        // Convert to base64 for local storage
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          handleProfileUpdate('avatar', e.target.result)
+        }
+        reader.readAsDataURL(file)
+      } catch (error) {
+        console.error('Failed to upload avatar:', error)
+      }
     }
   }
 
@@ -165,6 +198,85 @@ const ProfileModal = ({ onClose }) => {
       console.error('Failed to reset profile:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Load enhanced v1.2.3 Alpha profile data
+  const loadEnhancedProfileData = async () => {
+    try {
+      // Load crypto wallet data
+      if (window.UltraChat?.cryptoTipping && currentUser) {
+        const wallets = await window.UltraChat.cryptoTipping.getUserWallets(currentUser.id)
+        setCryptoWallets(wallets || {})
+        
+        const tips = await window.UltraChat.cryptoTipping.getTipStatistics(currentUser.id)
+        setTipStats(tips || {})
+      }
+      
+      // Load bot bridge connections
+      if (window.UltraChat?.botBridge) {
+        const connections = window.UltraChat.botBridge.getUserConnections?.(currentUser?.id) || {}
+        setBotConnections(connections)
+      }
+      
+      // Load trust statistics
+      if (trustManager && currentUser) {
+        const trustData = await trustManager.calculateTrustScore(currentUser.id)
+        setTrustStats(trustData || {})
+      }
+      
+      // Load audit statistics
+      if (window.UltraChat?.auditManager && currentUser) {
+        const auditEntries = await window.UltraChat.auditManager.getAuditEntries(currentUser.id, { limit: 50 })
+        setAuditStats({
+          total: auditEntries.length,
+          recent: auditEntries.filter(entry => 
+            Date.now() - new Date(entry.timestamp).getTime() < 7 * 24 * 60 * 60 * 1000
+          ).length
+        })
+      }
+    } catch (error) {
+      console.error('Failed to load enhanced profile data:', error)
+    }
+  }
+
+  // Handle crypto wallet management
+  const handleWalletUpdate = async (currency, address) => {
+    try {
+      const updatedWallets = {
+        ...cryptoWallets,
+        [currency]: address
+      }
+      setCryptoWallets(updatedWallets)
+      
+      // Save to crypto tipping service
+      if (window.UltraChat?.cryptoTipping) {
+        await window.UltraChat.cryptoTipping.updateUserWallet(currentUser.id, currency, address)
+      }
+    } catch (error) {
+      console.error('Failed to update wallet:', error)
+    }
+  }
+
+  // Handle bot connection management
+  const handleBotConnection = async (platform, action) => {
+    try {
+      if (action === 'connect') {
+        // Trigger bot connection flow
+        if (window.UltraChat?.botBridge) {
+          await window.UltraChat.botBridge.connectPlatform(platform, currentUser.id)
+        }
+      } else if (action === 'disconnect') {
+        // Disconnect from platform
+        if (window.UltraChat?.botBridge) {
+          await window.UltraChat.botBridge.disconnectPlatform(platform, currentUser.id)
+        }
+      }
+      
+      // Reload bot connections
+      await loadEnhancedProfileData()
+    } catch (error) {
+      console.error(`Failed to ${action} ${platform}:`, error)
     }
   }
 
@@ -188,7 +300,6 @@ const ProfileModal = ({ onClose }) => {
   }
 
   const currentProfile = profileData
-
   return (
     <div className="profile-modal">
       <div className="profile-header">
@@ -240,13 +351,23 @@ const ProfileModal = ({ onClose }) => {
                   <img src={currentProfile.avatar} alt="Avatar" />
                 ) : (
                   <div className="avatar-placeholder">
-                    {currentProfile.displayName.charAt(0).toUpperCase()}
+                    {currentProfile.displayName ? currentProfile.displayName.charAt(0).toUpperCase() : 'U'}
                   </div>
                 )}
               </div>
               <div className="avatar-actions">
-                <button className="btn btn-primary">Upload Avatar</button>
-                <button className="btn">Remove</button>
+                <label className="btn btn-primary">
+                  Upload Avatar
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+                <button className="btn" onClick={() => handleProfileUpdate('avatar', null)}>
+                  Remove
+                </button>
               </div>
             </div>
 
@@ -255,7 +376,7 @@ const ProfileModal = ({ onClose }) => {
               <label>Display Name</label>
               <input
                 type="text"
-                value={currentProfile.displayName}
+                value={currentProfile.displayName || ''}
                 onChange={(e) => handleProfileUpdate('displayName', e.target.value)}
                 className="input"
                 disabled={activeMode === PROFILE_MODES.ANON || loading}
@@ -266,7 +387,7 @@ const ProfileModal = ({ onClose }) => {
             <div className="form-group">
               <label>Bio</label>
               <textarea
-                value={currentProfile.bio}
+                value={currentProfile.bio || ''}
                 onChange={(e) => handleProfileUpdate('bio', e.target.value)}
                 className="input textarea"
                 rows="3"
@@ -347,28 +468,102 @@ const ProfileModal = ({ onClose }) => {
               </div>
             )}
 
-            {/* Ultra Mode Features */}
+            {/* Enhanced Ultra Mode Features */}
             {activeMode === PROFILE_MODES.ULTRA && (
               <div className="ultra-features">
-                <h4>Ultra Features</h4>
+                <h4>⚡ Ultra Features Dashboard</h4>
                 
+                {/* Enhanced Stats Grid */}
                 <div className="stats-grid">
-                  <div className="stat-card">
-                    <div className="stat-value">{currentProfile.trustScore || 0}%</div>
+                  <div className="stat-card trust">
+                    <div className="stat-value">{trustStats.score || currentProfile.trustScore || 0}%</div>
                     <div className="stat-label">Trust Score</div>
+                    <div className="stat-sublabel">{trustStats.level || 'Calculating...'}</div>
                   </div>
-                  <div className="stat-card">
+                  <div className="stat-card endorsements">
                     <div className="stat-value">{currentProfile.endorsements?.length || 0}</div>
                     <div className="stat-label">Endorsements</div>
+                    <div className="stat-sublabel">Community Trust</div>
                   </div>
-                  <div className="stat-card">
-                    <div className="stat-value">{currentProfile.verified ? '✓' : '✗'}</div>
-                    <div className="stat-label">Verified</div>
+                  <div className="stat-card crypto">
+                    <div className="stat-value">{tipStats.totalTips || 0}</div>
+                    <div className="stat-label">Crypto Tips</div>
+                    <div className="stat-sublabel">${(tipStats.totalValue || 0).toFixed(2)} USD</div>
+                  </div>
+                  <div className="stat-card audit">
+                    <div className="stat-value">{auditStats.recent || 0}</div>
+                    <div className="stat-label">Weekly Activity</div>
+                    <div className="stat-sublabel">{auditStats.total || 0} total entries</div>
                   </div>
                 </div>
 
+                {/* Crypto Wallet Management */}
+                <div className="crypto-wallets-section">
+                  <h5>💰 Crypto Wallets</h5>
+                  <div className="wallets-grid">
+                    {['BTC', 'ETH', 'DOGE', 'LTC', 'SOL', 'PYTH', 'LINK'].map(currency => (
+                      <div key={currency} className="wallet-item">
+                        <div className="wallet-header">
+                          <span className="wallet-currency">{currency}</span>
+                          <span className={`wallet-status ${cryptoWallets[currency] ? 'connected' : 'disconnected'}`}>
+                            {cryptoWallets[currency] ? '✅' : '❌'}
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={cryptoWallets[currency] || ''}
+                          onChange={(e) => handleWalletUpdate(currency, e.target.value)}
+                          placeholder={`Enter ${currency} wallet address`}
+                          className="wallet-input"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bot Bridge Connections */}
+                <div className="bot-connections-section">
+                  <h5>🌐 Bot Bridge Connections</h5>
+                  <div className="connections-grid">
+                    {[
+                      { platform: 'discord', icon: '🎮', name: 'Discord' },
+                      { platform: 'telegram', icon: '✈️', name: 'Telegram' },
+                      { platform: 'twitter', icon: '🐦', name: 'Twitter/X' },
+                      { platform: 'signal', icon: '📱', name: 'Signal' }
+                    ].map(({ platform, icon, name }) => (
+                      <div key={platform} className="connection-item">
+                        <div className="connection-header">
+                          <span className="connection-icon">{icon}</span>
+                          <span className="connection-name">{name}</span>
+                          <span className={`connection-status ${botConnections[platform] ? 'connected' : 'disconnected'}`}>
+                            {botConnections[platform] ? '✅' : '❌'}
+                          </span>
+                        </div>
+                        <div className="connection-actions">
+                          {botConnections[platform] ? (
+                            <button 
+                              className="btn btn-small btn-danger"
+                              onClick={() => handleBotConnection(platform, 'disconnect')}
+                            >
+                              Disconnect
+                            </button>
+                          ) : (
+                            <button 
+                              className="btn btn-small btn-primary"
+                              onClick={() => handleBotConnection(platform, 'connect')}
+                            >
+                              Connect
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Trust & Endorsements Section */}
                 <div className="endorsements-section">
-                  <h5>Recent Endorsements</h5>
+                  <h5>🛡️ Trust & Endorsements</h5>
                   <div className="endorsements-list">
                     {currentProfile.endorsements && currentProfile.endorsements.length > 0 ? (
                       currentProfile.endorsements.slice(0, 3).map((endorsement, index) => (
@@ -381,42 +576,81 @@ const ProfileModal = ({ onClose }) => {
                           </div>
                           <p className="endorsement-message">{endorsement.message || 'Endorsed this user'}</p>
                           <div className="endorsement-score">
-                            Trust Score: {endorsement.trustScore || 0}%
+                            Trust Impact: +{endorsement.trustScore || 5}%
                           </div>
                         </div>
                       ))
                     ) : (
-                      <p className="no-endorsements">No endorsements yet. Request endorsements from trusted contacts.</p>
+                      <div className="no-endorsements">
+                        <p>No endorsements yet. Build trust through:</p>
+                        <ul>
+                          <li>Successful crypto transactions</li>
+                          <li>Community contributions</li>
+                          <li>Verified bot connections</li>
+                          <li>Requesting endorsements from contacts</li>
+                        </ul>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Actions */}
+            {/* Enhanced Actions */}
             <div className="profile-actions">
               <button 
                 className="btn btn-primary" 
                 onClick={handleSaveProfile}
                 disabled={saving || loading}
               >
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? 'Saving...' : 'Save All Changes'}
               </button>
               <button 
                 className="btn" 
                 onClick={handleResetProfile}
                 disabled={loading}
               >
-                Reset
+                Reset Profile
               </button>
               {activeMode === PROFILE_MODES.ULTRA && (
-                <button 
-                  className="btn"
-                  onClick={() => alert('Endorsement system coming soon!')}
-                  disabled={loading}
-                >
-                  Request Endorsement
-                </button>
+                <>
+                  <button 
+                    className="btn btn-crypto"
+                    onClick={() => {
+                      if (window.UltraChat?.cryptoTipping) {
+                        console.log('Opening crypto dashboard...')
+                        // This would open a crypto management modal
+                      }
+                    }}
+                    disabled={loading}
+                  >
+                    💰 Crypto Dashboard
+                  </button>
+                  <button 
+                    className="btn btn-trust"
+                    onClick={() => {
+                      if (trustManager) {
+                        console.log('Opening trust management...')
+                        // This would open trust management modal
+                      }
+                    }}
+                    disabled={loading}
+                  >
+                    🛡️ Trust Center
+                  </button>
+                  <button 
+                    className="btn btn-audit"
+                    onClick={() => {
+                      if (window.UltraChat?.auditManager) {
+                        console.log('Opening audit viewer...')
+                        // This would open audit trail viewer
+                      }
+                    }}
+                    disabled={loading}
+                  >
+                    📊 View Audit Trail
+                  </button>
+                </>
               )}
             </div>
           </div>

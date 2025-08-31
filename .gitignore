@@ -20,6 +20,12 @@ build/
 .env.test.local
 .env.production.local
 
+# Bot configuration (NEVER commit these!)
+bot_config.json
+.env.local
+*.env.local
+config.local.*
+
 # IDE and editor files
 .vscode/
 .idea/
@@ -103,6 +109,14 @@ temp/
 settings.json
 config.local.json
 >>>>>>> fbc0b147594d7e709c50a95e7c1a32d56c36a7ae
+
+# Test files
+test-results/
+coverage/
+# Local config/user settings (make sure to ignore user-specific files)
+settings.json
+config.local.json
+
 # UltraChat specific
 # Don't commit local storage data
 localStorage.json
@@ -113,9 +127,39 @@ keys/
 # Ignore local security file with private contact info (not for GitHub)
 local_security.md
 
-# Local config/user settings (make sure to ignore user-specific files)
-settings.json
-config.local.json
+# Local development configuration files
+.gitignore.local
+SECURITY_CONFIG.md
+
+# Audio, video, images, and documents (user uploaded files)
+uploads/
+media/
+*.mp3
+*.mp4
+*.wav
+*.avi
+*.mov
+*.pdf
+*.doc
+*.docx
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+
+# Web of Trust data
+trust_data/
+endorsements/
+user_notes/
+
+# Audit logs (sensitive data)
+audit_logs.json
+pending_operations.json
+
+# Test files
+test-results/
+coverage/
 =======
 # Local config/user settings (make sure to ignore user-specific files)
 settings.json

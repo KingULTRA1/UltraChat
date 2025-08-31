@@ -1,11 +1,12 @@
-# Security Policy - UltraChat v1.1.0
+# Security Policy - UltraChat v1.2.3 Alpha
 
 ## Supported Versions
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 1.2.x   | :white_check_mark: |
 | 1.1.x   | :white_check_mark: |
-| 1.0.x   | :white_check_mark: |
+| 1.0.x   | :x:                |
 | < 1.0   | :x:                |
 
 ## Reporting a Vulnerability
@@ -18,7 +19,8 @@ UltraChat takes security seriously. If you discover a security vulnerability, we
 
 Instead, please report security issues privately through:
 
-- **GitHub Security Advisories**: Use the private vulnerability reporting feature
+- **GitHub Security Advisories**: Use the private vulnerability reporting feature  
+- **Twitter DM**: Contact [@Ultra1](https://X.com/Ultra1) for urgent security matters
 - **GitHub Issues**: For non-security bugs and features only
 - **GitHub Discussions**: For community-related questions
 

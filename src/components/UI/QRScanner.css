@@ -1,0 +1,424 @@
+/* QR Scanner Styles - Modern 2025 Design */
+.qr-scanner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  backdrop-filter: blur(10px);
+}
+
+.scanner-loading,
+.scanner-error {
+  background: var(--color-bg-secondary);
+  border-radius: 20px;
+  padding: var(--space-xl);
+  text-align: center;
+  max-width: 400px;
+  margin: var(--space-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 136, 204, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--color-accent-teal);
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto var(--space-lg);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: var(--space-lg);
+  opacity: 0.7;
+}
+
+.scanner-error h3 {
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-md);
+}
+
+.scanner-error p {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+.error-actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  margin-bottom: var(--space-xl);
+}
+
+.retry-btn,
+.close-btn {
+  padding: var(--space-md) var(--space-lg);
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-btn {
+  background: linear-gradient(135deg, var(--color-accent-teal), #00a6cc);
+  color: white;
+}
+
+.retry-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 136, 204, 0.4);
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-secondary);
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--color-text-primary);
+}
+
+.manual-input {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: var(--space-lg);
+  margin-top: var(--space-lg);
+}
+
+.manual-input h4 {
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-md);
+  font-size: 1rem;
+}
+
+.manual-input textarea {
+  width: 100%;
+  padding: var(--space-md);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  resize: vertical;
+  margin-bottom: var(--space-md);
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.manual-input textarea:focus {
+  outline: none;
+  border-color: var(--color-accent-teal);
+  box-shadow: 0 0 0 3px rgba(0, 136, 204, 0.15);
+}
+
+.manual-input button {
+  width: 100%;
+  padding: var(--space-md);
+  background: linear-gradient(135deg, var(--color-accent-teal), #00a6cc);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.manual-input button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
+}
+
+/* Test QR Section */
+.test-qr-section {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.test-qr-section h5 {
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.test-qr-btn {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: linear-gradient(135deg, rgba(0, 136, 204, 0.2), rgba(0, 166, 204, 0.2));
+  color: var(--color-accent-teal);
+  border: 1px solid rgba(0, 136, 204, 0.3);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.test-qr-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 136, 204, 0.3), rgba(0, 166, 204, 0.3));
+  border-color: var(--color-accent-teal);
+  transform: translateY(-1px);
+}
+
+.manual-input textarea {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+/* Scanner Content */
+.scanner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-bg-secondary);
+  padding: var(--space-lg) var(--space-xl);
+  border-radius: 20px 20px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  width: 90%;
+  max-width: 500px;
+}
+
+.scanner-header h3 {
+  color: var(--color-text-primary);
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.scanner-header .close-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: var(--space-sm);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.scanner-header .close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+}
+
+.scanner-content {
+  background: var(--color-bg-secondary);
+  border-radius: 0 0 20px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none;
+  padding: var(--space-xl);
+  width: 90%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.camera-container {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.camera-video {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  height: 300px;
+  object-fit: cover;
+}
+
+.scanning-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.scan-frame {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border: 2px solid transparent;
+}
+
+.corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 3px solid var(--color-accent-teal);
+}
+
+.corner.top-left {
+  top: -2px;
+  left: -2px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.corner.top-right {
+  top: -2px;
+  right: -2px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.corner.bottom-left {
+  bottom: -2px;
+  left: -2px;
+  border-right: none;
+  border-top: none;
+}
+
+.corner.bottom-right {
+  bottom: -2px;
+  right: -2px;
+  border-left: none;
+  border-top: none;
+}
+
+.scan-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-accent-teal), transparent);
+  animation: scan 2s ease-in-out infinite;
+}
+
+@keyframes scan {
+  0% { transform: translateY(-2px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(198px); opacity: 0; }
+}
+
+.camera-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  background: rgba(255, 255, 255, 0.05);
+  padding: var(--space-md);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.camera-controls label {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.camera-controls select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+  padding: var(--space-sm);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.camera-controls select:focus {
+  outline: none;
+  border-color: var(--color-accent-teal);
+}
+
+.scanner-instructions {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.scanner-instructions p {
+  margin-bottom: var(--space-xs);
+}
+
+.scan-result {
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 12px;
+  padding: var(--space-lg);
+  text-align: center;
+  color: var(--color-success);
+  animation: fadeInScale 0.5s ease-out;
+}
+
+@keyframes fadeInScale {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.8); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+.result-icon {
+  font-size: 2rem;
+  margin-bottom: var(--space-sm);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .scanner-header,
+  .scanner-content {
+    width: 95%;
+  }
+  
+  .camera-video {
+    height: 250px;
+  }
+  
+  .scan-frame {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .corner {
+    width: 25px;
+    height: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .scanner-header {
+    padding: var(--space-md);
+  }
+  
+  .scanner-content {
+    padding: var(--space-lg);
+  }
+  
+  .camera-video {
+    height: 200px;
+  }
+  
+  .error-actions {
+    flex-direction: column;
+  }
+}

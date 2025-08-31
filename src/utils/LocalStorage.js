@@ -1,14 +1,38 @@
 // Local Storage Manager for UltraChat
-// Handles secure local storage of messages and data
+// Ultra-Private: Handles secure local storage with zero external data transmission
+// All data stays on device, encrypted, with automatic cleanup
 
 import CryptoUtils from './CryptoUtils.js'
 
 class LocalStorage {
   constructor() {
     this.crypto = new CryptoUtils()
-    this.storageKey = 'ultrachat'
+    this.storageKey = 'ultrachat_private'
     this.encryptionKey = null
     this.initialized = false
+    this.deviceId = null
+    
+    // Privacy-first: Generate unique device identifier that never leaves device
+    this.initializePrivateDevice()
+  }
+
+  // Ultra-private device initialization
+  initializePrivateDevice() {
+    let deviceId = localStorage.getItem('ultrachat_device_private_id')
+    if (!deviceId) {
+      // Generate cryptographically secure device ID
+      const timestamp = Date.now()
+      const randomBytes = this.crypto.generateRandomBytes(32)
+      const deviceHash = Array.from(randomBytes).map(b => b.toString(36)).join('')
+      deviceId = `ultradev_${timestamp}_${deviceHash}`
+      localStorage.setItem('ultrachat_device_private_id', deviceId)
+    }
+    this.deviceId = deviceId
+    
+    // Mark this installation as privacy-first
+    localStorage.setItem('ultrachat_privacy_mode', 'ultra_private')
+    localStorage.setItem('ultrachat_no_tracking', 'true')
+    localStorage.setItem('ultrachat_local_only', 'true')
   }
 
   // Initialize storage with password/key
@@ -125,23 +149,34 @@ class LocalStorage {
     this.encryptionKey = null
   }
 
-  // Message-specific storage methods
+  // Message-specific storage methods with enhanced privacy
   async storeMessage(conversationId, message) {
-    const messagesKey = `messages_${conversationId}`
+    const messagesKey = `messages_${conversationId}_private`
     const existingMessages = await this.retrieve(messagesKey, [])
     
     const messages = Array.isArray(existingMessages) ? existingMessages : []
-    messages.push({
+    
+    // Enhanced message with privacy metadata
+    const privateMessage = {
       ...message,
-      storedAt: new Date().toISOString()
-    })
+      storedAt: new Date().toISOString(),
+      deviceId: this.deviceId,
+      localOnly: true,
+      encrypted: true,
+      noSync: true,
+      privateStorage: true,
+      messageHash: await this.crypto.hash(JSON.stringify(message))
+    }
+    
+    messages.push(privateMessage)
 
-    // Keep only last 1000 messages per conversation
+    // Keep only last 1000 messages per conversation for privacy
     if (messages.length > 1000) {
       messages.splice(0, messages.length - 1000)
     }
 
-    return await this.store(messagesKey, messages)
+    // Store with enhanced encryption
+    return await this.store(messagesKey, messages, true)
   }
 
   async getMessages(conversationId, limit = 50) {

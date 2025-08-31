@@ -43,7 +43,7 @@ class SocialHandles {
       },
       ultrachat: {
         name: 'UltraChat',
-        domain: 'ultrachat.app',
+        domain: 'github.com',
         prefix: '@',
         pattern: /^@?[A-Za-z0-9_]{3,20}$/,
         placeholder: '@your_handle',

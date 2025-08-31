@@ -2,23 +2,34 @@
 
 export const APP_CONFIG = {
   name: 'UltraChat',
-  version: '1.1.0',
+  version: '1.2.3 Alpha',
   description: 'UltraChat is a privacy-first messaging application offering end-to-end encryption, zero tracking, and cross-platform support.',
   author: 'UltraChat Team',
   repository: 'https://github.com/KingULTRA1/UltraChat',
-  supportEmail: 'support@ultrachat.app',
+  supportContact: '@Ultra1',
+  supportUrl: 'https://X.com/Ultra1',
+  dashboardRepo: 'https://github.com/KingULTRA1/Ultra-Dashboard',
   features: [
     'End-to-End Encryption',
     'Zero Tracking', 
     'Cross-Platform Support',
     'Open Source',
     'Web of Trust',
-    'Anonymous Mode'
+    'Anonymous Mode',
+    'File Sharing',
+    'Audio & Video Support',
+    'Crypto Tipping',
+    'Contact Notes & Profiles',
+    'Message Management',
+    'Auto-Reply System',
+    'Trust-based Moderation'
   ],
   links: {
     githubRepo: 'https://github.com/KingULTRA1/UltraChat',
-    privacyPolicy: 'https://ultrachat.app/privacy-policy',
-    documentation: 'https://ultrachat.app/docs'
+    dashboard: 'https://github.com/KingULTRA1/Ultra-Dashboard',
+    support: 'https://X.com/Ultra1',
+    privacyPolicy: 'https://github.com/KingULTRA1/UltraChat/blob/main/PRIVACY.md',
+    documentation: 'https://github.com/KingULTRA1/UltraChat/blob/main/README.md'
   }
 }
 
@@ -59,9 +70,16 @@ export const MESSAGE_TYPES = {
   FILE: 'file',
   AUDIO: 'audio',
   VIDEO: 'video',
+  DOCUMENT: 'document',
   LOCATION: 'location',
   CONTACT: 'contact',
-  SYSTEM: 'system'
+  SYSTEM: 'system',
+  TIP: 'crypto_tip',
+  NOTE: 'user_note',
+  CALL_REQUEST: 'call_request',
+  CALL_ACCEPT: 'call_accept',
+  CALL_REJECT: 'call_reject',
+  CALL_END: 'call_end'
 }
 
 export const MESSAGE_STATUS = {
@@ -111,12 +129,87 @@ export const PRIVACY_LEVELS = {
   MAXIMUM: 'maximum'
 }
 
+export const PROFESSIONAL_CATEGORIES = {
+  DEVELOPER: 'developer',
+  CODER: 'coder',
+  CRYPTO: 'crypto',
+  REAL_ESTATE: 'real_estate',
+  CONTRACTOR: 'contractor',
+  DESIGNER: 'designer',
+  MARKETING: 'marketing',
+  FINANCE: 'finance',
+  ENTREPRENEUR: 'entrepreneur',
+  ARTIST: 'artist',
+  HEALTHCARE: 'healthcare',
+  OTHER: 'other'
+}
+
+export const USER_NOTE_TYPES = {
+  GENERAL: 'general',
+  PROFESSIONAL: 'professional',
+  PERSONAL: 'personal',
+  TRUST_RATING: 'trust_rating',
+  CONTACT_INFO: 'contact_info',
+  SOCIAL_LINKS: 'social_links'
+}
+
+export const TRUST_REMINDER_SETTINGS = {
+  LOCK_THRESHOLD: 11, // Lock rating after 11 chats
+  REMINDER_DELAY: 7 * 24 * 60 * 60 * 1000, // 1 week in milliseconds
+  AUTO_LOCK_DELAY: 10 * 24 * 60 * 60 * 1000 // 10 days for auto-lock
+}
+
+export const MESSAGE_MANAGEMENT = {
+  IMMEDIATE_DELETE_WINDOW: 5 * 60 * 1000, // 5 minutes in milliseconds
+  IMMEDIATE_EDIT_WINDOW: 15 * 60 * 1000, // 15 minutes in milliseconds
+  APPROVAL_TIMEOUT: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+  MAX_PENDING_OPERATIONS: 50,
+  ARCHIVE_RETENTION_DAYS: 30
+}
+
+export const FILE_MANAGEMENT = {
+  MAX_FILE_SIZE: 100 * 1024 * 1024, // 100MB in bytes
+  ALLOWED_TYPES: [
+    'image/png',
+    'image/jpeg',
+    'image/jpg',
+    'image/gif',
+    'image/webp',
+    'audio/mpeg',
+    'audio/wav',
+    'audio/mp3',
+    'video/mp4',
+    'video/quicktime',
+    'video/mov',
+    'application/pdf',
+    'text/plain',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ],
+  BACKUP_RETENTION_DAYS: 90,
+  MAX_FILES_PER_CONVERSATION: 1000
+}
+
+export const CRYPTO_CURRENCIES = {
+  BTC: 'Bitcoin',
+  ETH: 'Ethereum', 
+  DOGE: 'Dogecoin',
+  LTC: 'Litecoin',
+  SOL: 'Solana',
+  PYTH: 'Pyth Network',
+  LINK: 'Chainlink'
+}
+
 export const VERIFICATION_METHODS = {
-  TWEET: 'tweet',
-  REPO: 'repo',
-  META: 'meta',
-  POST: 'post',
-  SIGNATURE: 'signature'
+  MUTUAL_CONTACTS: 'mutual_contacts',
+  SOCIAL_MEDIA: 'social_media',
+  PHONE_VERIFICATION: 'phone_verification',
+  EMAIL_VERIFICATION: 'email_verification',
+  GOVERNMENT_ID: 'government_id',
+  BIOMETRIC: 'biometric',
+  CRYPTOGRAPHIC_PROOF: 'cryptographic_proof',
+  WEB_OF_TRUST: 'web_of_trust',
+  REPUTATION_BASED: 'reputation_based'
 }
 
 export const CROSS_SERVICE_TYPES = {
@@ -124,6 +217,106 @@ export const CROSS_SERVICE_TYPES = {
   PHONE_SMS: 'phone_sms',
   FACEBOOK_MSG: 'facebook_msg',
   EMAIL: 'email'
+}
+
+export const AUTO_REPLY_TYPES = {
+  QUICK: 'quick',
+  SCHEDULE: 'schedule',
+  STATUS_BASED: 'status_based',
+  MISSED_CALL: 'missed_call',
+  EMOJI_ONLY: 'emoji_only'
+}
+
+export const AUTO_REPLY_PRESETS = {
+  ON_MY_WAY: {
+    id: 'on_my_way',
+    text: "On my way! 🚗",
+    emoji: '🚗',
+    category: 'quick'
+  },
+  CANT_TALK: {
+    id: 'cant_talk',
+    text: "Can't talk right now 📞",
+    emoji: '📞',
+    category: 'quick'
+  },
+  WILL_REPLY: {
+    id: 'will_reply',
+    text: "Will reply later 💬",
+    emoji: '💬',
+    category: 'quick'
+  },
+  BUSY_STATUS: {
+    id: 'busy_status',
+    text: "Currently unavailable, I'll get back to you soon.",
+    emoji: '⏰',
+    category: 'status'
+  },
+  MISSED_CALL: {
+    id: 'missed_call',
+    text: "Sorry I missed your call, please leave a message.",
+    emoji: '📞',
+    category: 'call'
+  },
+  OUT_OF_HOURS: {
+    id: 'out_of_hours',
+    text: "Thanks for your message! I'm currently offline and will respond during my active hours.",
+    emoji: '🌙',
+    category: 'schedule'
+  }
+}
+
+export const EMOJI_QUICK_REPLIES = {
+  THUMBS_UP: '👍',
+  LAUGH: '😂',
+  FIRE: '🔥',
+  HEART: '❤️',
+  THINKING: '🤔',
+  OK_HAND: '👌',
+  CLAP: '👏',
+  EYES: '👀',
+  ROCKET: '🚀',
+  SPARKLES: '✨',
+  LIGHTNING: '⚡',
+  DIAMOND: '💎',
+  MONEY: '💰',
+  SHIELD: '🛡️',
+  LOCK: '🔒'
+}
+
+export const AUTO_REPLY_RULES = {
+  MAX_CUSTOM_REPLIES: 20,
+  MAX_TEXT_LENGTH: 300,
+  COOLDOWN_MINUTES: 5, // Prevent spam
+  SCHEDULE_CHECK_INTERVAL: 60000, // 1 minute
+  DEFAULT_ACTIVE_HOURS: {
+    start: '09:00',
+    end: '18:00',
+    timezone: 'local'
+  }
+}
+
+export const CALL_STATES = {
+  IDLE: 'idle',
+  CALLING: 'calling',
+  RINGING: 'ringing',
+  CONNECTED: 'connected',
+  ENDED: 'ended',
+  FAILED: 'failed',
+  BUSY: 'busy'
+}
+
+export const CALL_TYPES = {
+  VOICE: 'voice',
+  VIDEO: 'video'
+}
+
+export const WEBRTC_CONFIG = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' }
+  ],
+  iceCandidatePoolSize: 10
 }
 
 export const UI_CONSTANTS = {
@@ -223,6 +416,7 @@ export const MIME_TYPES = {
   // Images
   PNG: 'image/png',
   JPEG: 'image/jpeg',
+  JPG: 'image/jpg',
   GIF: 'image/gif',
   WEBP: 'image/webp',
   
@@ -230,27 +424,34 @@ export const MIME_TYPES = {
   PDF: 'application/pdf',
   DOC: 'application/msword',
   DOCX: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  TXT: 'text/plain',
   
   // Audio
   MP3: 'audio/mpeg',
   WAV: 'audio/wav',
   OGG: 'audio/ogg',
+  M4A: 'audio/mp4',
+  FLAC: 'audio/flac',
   
   // Video
   MP4: 'video/mp4',
   WEBM: 'video/webm',
+  AVI: 'video/x-msvideo',
+  MOV: 'video/quicktime',
   
   // Archives
   ZIP: 'application/zip',
-  RAR: 'application/x-rar-compressed'
+  RAR: 'application/x-rar-compressed',
+  TAR: 'application/x-tar',
+  GZ: 'application/gzip'
 }
 
 export const SUPPORTED_FILE_TYPES = {
-  IMAGES: [MIME_TYPES.PNG, MIME_TYPES.JPEG, MIME_TYPES.GIF, MIME_TYPES.WEBP],
-  DOCUMENTS: [MIME_TYPES.PDF, MIME_TYPES.DOC, MIME_TYPES.DOCX],
-  AUDIO: [MIME_TYPES.MP3, MIME_TYPES.WAV, MIME_TYPES.OGG],
-  VIDEO: [MIME_TYPES.MP4, MIME_TYPES.WEBM],
-  ARCHIVES: [MIME_TYPES.ZIP, MIME_TYPES.RAR]
+  IMAGES: [MIME_TYPES.PNG, MIME_TYPES.JPEG, MIME_TYPES.JPG, MIME_TYPES.GIF, MIME_TYPES.WEBP],
+  DOCUMENTS: [MIME_TYPES.PDF, MIME_TYPES.DOC, MIME_TYPES.DOCX, MIME_TYPES.TXT],
+  AUDIO: [MIME_TYPES.MP3, MIME_TYPES.WAV, MIME_TYPES.OGG, MIME_TYPES.M4A, MIME_TYPES.FLAC],
+  VIDEO: [MIME_TYPES.MP4, MIME_TYPES.WEBM, MIME_TYPES.AVI, MIME_TYPES.MOV],
+  ARCHIVES: [MIME_TYPES.ZIP, MIME_TYPES.RAR, MIME_TYPES.TAR, MIME_TYPES.GZ]
 }
 
 export const KEYBOARD_SHORTCUTS = {
@@ -278,12 +479,22 @@ export const DEVELOPMENT = {
 
 // Feature flags for gradual rollout
 export const FEATURE_FLAGS = {
-  VOICE_MESSAGES: false,
-  VIDEO_CALLS: false,
+  VOICE_MESSAGES: true,
+  VIDEO_MESSAGES: true,
+  VIDEO_CALLS: true,
   GROUP_CHATS: false,
   FILE_SHARING: true,
+  IMAGE_SHARING: true,
+  DOCUMENT_SHARING: true,
+  AUDIO_SHARING: true,
   CROSS_SERVICE_FACEBOOK: false, // Facebook integration disabled by default
   ADVANCED_TRUST_METRICS: true,
+  WEB_OF_TRUST: true,
+  USER_NOTES: true,
+  PROFESSIONAL_CATEGORIES: true,
+  CRYPTO_TIPPING: true,
+  CONTACT_PROFILES: true,
+  TRUST_REMINDERS: true,
   EXPERIMENTAL_ENCRYPTION: false
 }
 
@@ -342,7 +553,17 @@ export default {
   THEME_MODES,
   PRIVACY_LEVELS,
   VERIFICATION_METHODS,
+  PROFESSIONAL_CATEGORIES,
+  USER_NOTE_TYPES,
+  TRUST_REMINDER_SETTINGS,
+  MESSAGE_MANAGEMENT,
+  FILE_MANAGEMENT,
   CROSS_SERVICE_TYPES,
+  CRYPTO_CURRENCIES,
+  AUTO_REPLY_TYPES,
+  AUTO_REPLY_PRESETS,
+  EMOJI_QUICK_REPLIES,
+  AUTO_REPLY_RULES,
   UI_CONSTANTS,
   LIMITS,
   ERROR_CODES,

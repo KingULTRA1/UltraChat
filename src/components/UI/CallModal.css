@@ -1,0 +1,481 @@
+/* Call Modal Styles */
+.call-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.call-modal.fullscreen {
+  background: #000;
+}
+
+.call-overlay {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Call Header */
+.call-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-lg);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
+  color: white;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.call-info h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.call-info p {
+  margin: 0.5rem 0 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+}
+
+.fullscreen-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Video Container */
+.video-container {
+  flex: 1;
+  position: relative;
+  background: #000;
+  overflow: hidden;
+}
+
+.remote-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #1a1a1a;
+}
+
+.local-video {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 200px;
+  height: 150px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  object-fit: cover;
+  background: #2a2a2a;
+  z-index: 5;
+}
+
+.video-disabled-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.video-disabled-message {
+  text-align: center;
+  color: white;
+}
+
+.video-disabled-icon {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+/* Voice Call Container */
+.voice-call-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+}
+
+.contact-avatar.large {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  font-weight: bold;
+  margin-bottom: var(--space-xl);
+  border: 4px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Audio Visualization */
+.audio-visualization {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  height: 40px;
+}
+
+.audio-bar {
+  width: 6px;
+  background: var(--color-primary);
+  border-radius: 3px;
+  animation: audioWave 1.5s ease-in-out infinite;
+}
+
+.audio-bar:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.audio-bar:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.audio-bar:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.audio-bar:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+@keyframes audioWave {
+  0%, 100% {
+    height: 10px;
+    opacity: 0.4;
+  }
+  50% {
+    height: 35px;
+    opacity: 1;
+  }
+}
+
+/* Call Controls */
+.call-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-xl);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+}
+
+.incoming-controls {
+  display: flex;
+  gap: var(--space-xl);
+}
+
+.active-controls {
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+.call-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: none;
+  font-size: 2.2rem;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+}
+
+.call-btn::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.call-btn:hover::before {
+  opacity: 1;
+  animation: shimmer 1.5s ease infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.call-btn.accept {
+  background: linear-gradient(135deg, var(--color-success) 0%, #43a047 100%);
+  box-shadow: var(--shadow-glow-success), 0 8px 32px rgba(76, 175, 80, 0.4);
+}
+
+.call-btn.accept:hover {
+  background: linear-gradient(135deg, #43a047 0%, var(--color-success) 100%);
+  transform: scale(1.1) translateY(-4px);
+  box-shadow: var(--shadow-glow-success-intense), 0 12px 40px rgba(76, 175, 80, 0.5);
+}
+
+.call-btn.reject {
+  background: linear-gradient(135deg, var(--color-error) 0%, #d32f2f 100%);
+  box-shadow: var(--shadow-glow-error), 0 8px 32px rgba(244, 67, 54, 0.4);
+}
+
+.call-btn.reject:hover {
+  background: linear-gradient(135deg, #d32f2f 0%, var(--color-error) 100%);
+  transform: scale(1.1) translateY(-4px);
+  box-shadow: var(--shadow-glow-error-intense), 0 12px 40px rgba(244, 67, 54, 0.5);
+}
+
+.call-btn.end-call {
+  background: linear-gradient(135deg, var(--color-error) 0%, #b71c1c 100%);
+  box-shadow: var(--shadow-glow-error), 0 8px 32px rgba(244, 67, 54, 0.4);
+}
+
+.call-btn.end-call:hover {
+  background: linear-gradient(135deg, #b71c1c 0%, var(--color-error) 100%);
+  transform: scale(1.1) translateY(-4px) rotate(15deg);
+  box-shadow: var(--shadow-glow-error-intense), 0 12px 40px rgba(244, 67, 54, 0.5);
+}
+
+.control-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  color: white;
+  font-size: 1.6rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+}
+
+.control-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: rotate(-45deg);
+  transition: transform 0.6s ease;
+}
+
+.control-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.control-btn:hover::before {
+  transform: rotate(-45deg) translateX(100%);
+}
+
+.control-btn.disabled {
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.9) 0%, rgba(198, 40, 40, 0.9) 100%);
+  border-color: rgba(244, 67, 54, 0.8);
+  box-shadow: 0 0 20px rgba(244, 67, 54, 0.4);
+}
+
+.control-btn.disabled:hover {
+  background: linear-gradient(135deg, rgba(244, 67, 54, 1) 0%, rgba(198, 40, 40, 1) 100%);
+  transform: scale(1.05) translateY(-1px);
+  box-shadow: 0 0 25px rgba(244, 67, 54, 0.6);
+}
+
+/* Call Messages */
+.call-message {
+  position: absolute;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: white;
+  z-index: 10;
+}
+
+.call-message p {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cancel-btn {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-xl);
+  color: white;
+  padding: var(--space-md) var(--space-xl);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cancel-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.cancel-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.cancel-btn:hover::before {
+  left: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .call-header {
+    padding: var(--space-md);
+  }
+
+  .call-info h3 {
+    font-size: 1.25rem;
+  }
+
+  .call-info p {
+    font-size: 0.9rem;
+  }
+
+  .local-video {
+    width: 120px;
+    height: 90px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .contact-avatar.large {
+    width: 120px;
+    height: 120px;
+    font-size: 3rem;
+  }
+
+  .call-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 1.8rem;
+  }
+
+  .control-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+  }
+
+  .active-controls {
+    gap: var(--space-sm);
+  }
+}
+
+/* Animation for incoming call */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: var(--shadow-glow-success), 0 8px 32px rgba(76, 175, 80, 0.4), 0 0 0 0 rgba(76, 175, 80, 0.7);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-glow-success-intense), 0 12px 40px rgba(76, 175, 80, 0.6), 0 0 0 20px rgba(76, 175, 80, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: var(--shadow-glow-success), 0 8px 32px rgba(76, 175, 80, 0.4), 0 0 0 0 rgba(76, 175, 80, 0);
+  }
+}
+
+.call-modal[data-state="ringing"] .call-btn.accept {
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .call-modal,
+[data-theme="obsidian"] .call-modal {
+  background: rgba(0, 0, 0, 0.98);
+}
+
+[data-theme="light"] .call-modal {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="light"] .call-header,
+[data-theme="light"] .call-controls {
+  color: #333;
+}
+
+[data-theme="light"] .call-header {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), transparent);
+}
+
+[data-theme="light"] .call-controls {
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.9), transparent);
+}

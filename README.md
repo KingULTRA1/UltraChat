@@ -1,6 +1,6 @@
-# UltraChat v1.1.0 🚀💬
+# UltraChat v1.2.3 Alpha 🚀💬
 
-UltraChat is a modern, privacy-focused messaging application built with React, featuring end-to-end encryption, multiple profile modes, Web of Trust, and cross-service messaging capabilities.
+UltraChat is a modern, privacy-focused messaging application built with React, featuring end-to-end encryption, multiple profile modes, Web of Trust, crypto tipping, message management, and cross-service messaging capabilities.
 
 **UltraChat - Privacy First, Security Always 🛡️⚡**
 
@@ -27,6 +27,9 @@ UltraChat is a modern, privacy-focused messaging application built with React, f
 ### 💬 Messaging Engine
 - End-to-end encrypted messaging with forward secrecy  
 - Cross-service messaging (Twitter/X, phone numbers, optional Facebook)  
+- **Message Management**: Controlled deletion and editing with approval workflows
+- **Auto-Reply System**: Smart quick responses and custom auto-reply rules
+- **Crypto Tipping**: Send tips in BTC, ETH, DOGE, LTC, SOL, PYTH, LINK
 - Local message storage with automatic cleanup  
 - Read receipts and typing indicators  
 - Simulated delivery alerts for external services  
@@ -38,13 +41,36 @@ UltraChat is a modern, privacy-focused messaging application built with React, f
 - **Responsive Design**: Works on desktop, tablet, and mobile  
 - **Accessibility**: High contrast mode and reduced motion support  
 
-### 🔐 Security & Privacy
-- AES-256-GCM encryption for all messages  
-- RSA-2048 for key exchange and digital signatures  
-- PBKDF2 key derivation with 100,000 iterations  
-- Secure random number generation  
-- Forward secrecy with key rotation  
-- Memory-safe key handling  
+### 🎆 New in v1.2.3 Alpha
+- **💰 Enhanced Crypto Tipping**: Full support for BTC, ETH, DOGE, LTC, SOL, PYTH, LINK with QR codes
+- **🔄 Message Management**: Controlled delete/edit with moderator approval workflows
+- **🤖 Auto-Reply System**: Smart quick replies and custom auto-reply rules
+- **⚖️ Trust-based Moderation**: Web of Trust integrated permissions and approval system
+- **📁 File Management**: Comprehensive file handling with controlled deletion
+- **📊 Audit Trail**: Encrypted audit logs for data recovery and investigation
+- **⚙️ Enhanced Settings**: Comprehensive permission controls and crypto configuration
+
+### 🌐 Ultra-Privacy Features
+
+### Maximum Privacy Mode
+UltraChat operates in **Ultra-Privacy Mode** by default:
+- **Zero External Data Transmission**: All data stays on your device
+- **No Analytics or Tracking**: Completely disabled and cannot be enabled
+- **Local Storage Only**: Messages, profiles, and settings stored locally with encryption
+- **No Cloud Sync**: Everything remains on your devices
+- **Privacy-First Architecture**: Built from the ground up to protect your data
+
+### Secure Cross-Device Sync
+- **QR Code Export/Import**: Transfer settings between devices using encrypted QR codes
+- **Secure File Backups**: Create password-encrypted backup files
+- **Discord/Telegram Sharing**: Share encrypted backups through messaging apps
+- **Local-Only Transfer**: No external servers involved in sync process
+
+### Voice & Video Calling
+- **WebRTC Peer-to-Peer**: Direct device-to-device calling
+- **Encrypted Calling**: All calls protected with end-to-end encryption
+- **Local Call History**: Call logs stored locally, never transmitted
+- **Privacy-First Implementation**: No call data sent to external services
 
 
 

@@ -131,7 +131,7 @@ We welcome feature suggestions! Please:
 
 ### Vulnerability Reporting
 
-For security vulnerabilities, please email security@ultrachat.app instead of creating public issues.
+For security vulnerabilities, please use GitHub Security Advisories or direct message @Ultra1 on Twitter instead of creating public issues.
 
 ## Testing
 
