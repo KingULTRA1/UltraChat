@@ -1,4 +1,4 @@
-# UltraChat Bot Bridge - v1.2.3 Alpha
+# UltraChat Bot Bridge - v1.2.3.4 Final
 
 ## 🤖 Secure Cross-Platform Messaging Bridge
 
@@ -121,7 +121,7 @@ ULTRACHAT_AUDIT_ENCRYPTION=true
 
 ## 📊 **Message Flow**
 
-```mermaid
+```
 graph TD
     A[Platform Message] --> B[Bot Bridge]
     B --> C{Encrypt Message}
@@ -191,7 +191,7 @@ ULTRACHAT_LOG_LEVEL=debug npm run bot-bridge
 ### **Common Issues**
 
 **Bot won't start:**
-```bash
+```
 # Check configuration
 cat .env.local | grep -E "TOKEN|KEY"
 # Regenerate config
@@ -199,7 +199,7 @@ node setup_bot_bridge.js
 ```
 
 **Encryption errors:**
-```bash
+```
 # Verify key format (should be 44 chars base64)
 echo $ULTRACHAT_AES_KEY | base64 -d | wc -c
 # Should output: 32

@@ -12,7 +12,7 @@
  */
 
 import LocalStorage from '../../utils/LocalStorage'
-import Constants from '../../utils/Constants'
+import * as Constants from '../../utils/Constants';
 
 class AutoReplyManager {
   constructor() {

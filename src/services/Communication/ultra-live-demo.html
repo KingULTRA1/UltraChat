@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<!-- UltraLive Demo HTML -->
+<!-- 🚀 UltraChat v1.2.3.4 Final - PRIVACY FIRST -->
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UltraLive Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+        
+        .controls {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00a6cc;
+        }
+        
+        select {
+            width: 100%;
+            padding: 10px;
+            background: #2d2d2d;
+            color: white;
+            border: 1px solid #0088cc;
+            border-radius: 5px;
+        }
+        
+        .liveOverlay {
+            background: #1e1e1e;
+            border: 2px solid #0088cc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0, 136, 204, 0.3);
+        }
+        
+        .liveOrb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .userInfo {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .screenName {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #00ff88;
+        }
+        
+        .handle {
+            color: #00a6cc;
+            margin: 0 10px;
+        }
+        
+        .accountType {
+            background: #0088cc;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+        
+        .mood {
+            background: #ff6b35;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        
+        .chatOverlay p {
+            margin: 5px 0;
+            padding: 8px;
+            background: #2d2d2d;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        
+        .instructions {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        
+        .instructions h3 {
+            color: #00ff88;
+            margin-top: 0;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 UltraLive Demo</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="accountTypeDropdown">Account Type:</label>
+                <select id="accountTypeDropdown">
+                    <option value="">Select Account Type</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="moodDropdown">Mood:</label>
+                <select id="moodDropdown">
+                    <option value="">Select Mood</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="demo-content">
+            <!-- Live overlays will be inserted here by JavaScript -->
+        </div>
+        
+        <div class="instructions">
+            <h3>How UltraLive Works:</h3>
+            <ul>
+                <li><strong>Account Types:</strong> Each account type has unique voice characteristics (pitch/rate)</li>
+                <li><strong>Text Transformations:</strong> Messages can be mirrored, uppercased, or displayed normally</li>
+                <li><strong>Voice Integration:</strong> Text-to-speech with profile-specific voice settings</li>
+                <li><strong>Live Overlays:</strong> Real-time display of user info and messages</li>
+                <li><strong>Dynamic Moods:</strong> Moods change based on account type</li>
+            </ul>
+            <p>In a full implementation, this would connect to UltraChat's real-time communication system.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the UltraLive module
+        import UltraLive from './UltraLive.js';
+        
+        // Sample user data
+        const sampleUsers = [
+            {
+                handle: "UltraKing",
+                screenName: "Ultra",
+                accountType: "Ultra Elite",
+                mood: "Chill",
+                voiceEnabled: true,
+                mirrorText: true,
+                uppercase: false,
+                liveColor: "#ff0000",
+                messages: ["Hello everyone!", "Ready to rock UltraChat!", "Let's make some noise!"]
+            },
+            {
+                handle: "AnonGhost",
+                screenName: "Ghost",
+                accountType: "Anon",
+                mood: "Party",
+                voiceEnabled: true,
+                mirrorText: false,
+                uppercase: true,
+                liveColor: "#0000ff",
+                messages: ["Stealth mode activated!", "Let's vibe!", "Invisible and unstoppable!"]
+            },
+            {
+                handle: "CryptoLord",
+                screenName: "Satoshi",
+                accountType: "Pro",
+                mood: "Focused",
+                voiceEnabled: true,
+                mirrorText: false,
+                uppercase: false,
+                liveColor: "#ffd700",
+                messages: ["To the moon!", "Diamond hands!", "HODL strong!"]
+            }
+        ];
+        
+        // Initialize the demo when the page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Initialize UltraLive with sample users
+                UltraLive.initMultiUserLive(sampleUsers);
+                
+                // Initialize the UI controls
+                if (sampleUsers.length > 0) {
+                    await UltraLive.UltraLiveInit("DEMO_USER", sampleUsers[0]);
+                }
+                
+                console.log('✅ UltraLive Demo initialized');
+            } catch (error) {
+                console.error('❌ Demo initialization failed:', error);
+            }
+        });
+    </script>
+</body>
+</html>

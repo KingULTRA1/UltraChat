@@ -1,17 +1,14 @@
 /*
- * File Manager Service - UltraChat v1.2.3 Alpha
+ * File Manager Service - UltraChat v1.2.3.4 Final
  * 
- * Manages file operations with controlled permissions:
- * - File upload with validation and scanning
- * - Controlled file deletion with approval workflow
- * - File backup and recovery
- * - Secure file storage and retrieval
+ * Handles file operations with secure encryption and local storage
  * 
- * Supports: MP3, PDF, PNG, JPG, MOV, DOC, TXT and more
+ * Privacy-First: All files encrypted and stored locally
+ * Zero-Tracking: No analytics or external data transmission
  */
 
 import LocalStorage from '../../utils/LocalStorage'
-import Constants from '../../utils/Constants'
+import * as Constants from '../../utils/Constants';
 
 class FileManager {
   constructor(auditManager, messageManagement) {

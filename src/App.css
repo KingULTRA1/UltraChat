@@ -8,7 +8,17 @@
   font-family: var(--font-family-sans);
 }
 
-/* Ultra-Enhanced Obsidian Theme - v1.2.3 */
+/* Auth wrapper for proper centering */
+.auth-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* Ultra-Enhanced Obsidian Theme - v1.2.3.4 Final */
 .app[data-theme="obsidian"] {
   --color-bg-primary: #0a0c10;
   --color-bg-secondary: #12151a;

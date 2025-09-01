@@ -1,5 +1,5 @@
 /*
- * Crypto Tipping Service - UltraChat v1.2.3 Alpha
+ * Crypto Tipping Service - UltraChat v1.2.3.4 Final
  * 
  * Enhanced crypto tipping with full currency support:
  * - BTC, ETH, DOGE, LTC, SOL, PYTH, LINK
@@ -9,7 +9,7 @@
  */
 
 import LocalStorage from '../../utils/LocalStorage'
-import Constants from '../../utils/Constants'
+import * as Constants from '../../utils/Constants';
 
 class CryptoTipping {
   constructor(auditManager) {

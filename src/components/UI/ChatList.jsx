@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import './ChatList.css'
 
-// 🚀 UltraChat v1.2.3 Alpha - PRIVACY FIRST
+// 🚀 UltraChat v1.2.3.4 Final - PRIVACY FIRST
 
 // New Chat Form Component
 const NewChatForm = ({ type, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     handle: '',
     name: '',
-    profileMode: 'Basic'
+    profileMode: 'Basic',
+    groupMembers: [],
+    memberInput: ''
   })
   const [isConnecting, setIsConnecting] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState(null)
@@ -18,6 +20,8 @@ const NewChatForm = ({ type, onSubmit, onCancel }) => {
     
     if (type === 'discord') {
       await handleDiscordConnection()
+    } else if (type === 'group') {
+      await handleGroupCreation()
     } else if (formData.handle.trim()) {
       onSubmit({
         ...formData,
@@ -25,6 +29,38 @@ const NewChatForm = ({ type, onSubmit, onCancel }) => {
         trustScore: type === 'qr' ? 50 : 0
       })
     }
+  }
+  
+  const handleGroupCreation = async () => {
+    if (formData.groupMembers.length < 2) {
+      alert('Please add at least 2 members to create a group')
+      return
+    }
+    
+    onSubmit({
+      name: formData.name || 'New Group Chat',
+      type: 'group',
+      members: formData.groupMembers,
+      handle: `group://${Date.now()}`,
+      trustScore: 0
+    })
+  }
+  
+  const addGroupMember = () => {
+    if (formData.memberInput.trim() && !formData.groupMembers.includes(formData.memberInput.trim())) {
+      setFormData({
+        ...formData,
+        groupMembers: [...formData.groupMembers, formData.memberInput.trim()],
+        memberInput: ''
+      })
+    }
+  }
+  
+  const removeGroupMember = (member) => {
+    setFormData({
+      ...formData,
+      groupMembers: formData.groupMembers.filter(m => m !== member)
+    })
   }
 
   const handleDiscordConnection = async () => {
@@ -110,14 +146,14 @@ const NewChatForm = ({ type, onSubmit, onCancel }) => {
               <li>Open UltraChat on your other device</li>
               <li>Go to Settings → Backup & Sync</li>
               <li>Generate QR code for this device</li>
-              <li>Click "Start Scanning" to use camera</li>
+              <li>Click &#34;Start Scanning&#34; to use camera</li>
             </ol>
           </div>
           
           <div className="qr-preview">
             <div className="qr-placeholder">
               <span className="qr-icon">📷</span>
-              <p>Camera will open when you click "Start Scanning"</p>
+              <p>Camera will open when you click &#34;Start Scanning&#34;</p>
             </div>
           </div>
         </div>
@@ -169,588 +205,354 @@ const NewChatForm = ({ type, onSubmit, onCancel }) => {
         </div>
       )}
       
-      {['telegram', 'twitter'].includes(type) && (
-        <div className="platform-auth">
-          <div className="platform-icon">
-            {type === 'telegram' ? '✈️' : '🐦'}
-          </div>
-          <h3>Connect via {type.charAt(0).toUpperCase() + type.slice(1)}</h3>
-          <div className="platform-instructions">
-            <p>To connect via {type}:</p>
-            <ol>
-              <li>Open {type} app</li>
-              <li>Find the UltraChat bot</li>
-              <li>Send command: <code>/connect</code></li>
-              <li>Follow the bot's instructions</li>
-            </ol>
-          </div>
+      {type === 'group' && (
+        <div className="platform-auth group-auth">
+          <div className="platform-icon">👥</div>
+          <h3>Create Group Chat</h3>
+          
           <div className="form-group">
-            <label>{type.charAt(0).toUpperCase() + type.slice(1)} Username/ID</label>
+            <label>Group Name</label>
             <input
               type="text"
-              placeholder={`Your ${type} username or ID`}
-              value={formData.handle}
-              onChange={(e) => setFormData({...formData, handle: e.target.value})}
+              placeholder="Enter group name"
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
               required
             />
           </div>
+          
+          <div className="form-group">
+            <label>Add Members</label>
+            <div className="member-input-container">
+              <input
+                type="text"
+                placeholder="Enter username, phone, or email"
+                value={formData.memberInput}
+                onChange={(e) => setFormData({...formData, memberInput: e.target.value})}
+              />
+              <button type="button" onClick={addGroupMember}>Add</button>
+            </div>
+            
+            {formData.groupMembers.length > 0 && (
+              <div className="group-members-list">
+                <h4>Members ({formData.groupMembers.length}):</h4>
+                <ul>
+                  {formData.groupMembers.map((member, index) => (
+                    <li key={index}>
+                      {member}
+                      <button 
+                        type="button" 
+                        onClick={() => removeGroupMember(member)}
+                        className="remove-member-btn"
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       )}
-
+      
       <div className="form-actions">
-        <button type="button" onClick={onCancel} disabled={isConnecting}>Cancel</button>
-        <button 
-          type="submit" 
-          disabled={(!formData.handle.trim() && type !== 'qr') || isConnecting}
-        >
-          {isConnecting ? 'Connecting...' :
+        <button type="submit" className="submit-btn">
+          {type === 'discord' ? 'Connect to Discord' : 
+           type === 'group' ? 'Create Group' : 
            type === 'qr' ? 'Start Scanning' : 
-           type === 'discord' ? 'Connect to Discord' :
-           ['telegram', 'twitter'].includes(type) ? 'Connect' : 
-           'Connect'}
+           'Start Chat'}
+        </button>
+        <button type="button" className="cancel-btn" onClick={onCancel}>
+          Cancel
         </button>
       </div>
     </form>
   )
 }
 
-const ChatList = ({ onChatSelect, selectedChat, collapsed = false, hovered = false, currentUser, trustManager }) => {
-  const [chats, setChats] = useState([])
-  const [filteredChats, setFilteredChats] = useState([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [showNewChatModal, setShowNewChatModal] = useState(false)
+const ChatList = ({ 
+  onChatSelect, 
+  selectedChat, 
+  collapsed, 
+  hovered,
+  currentUser,
+  trustManager
+}) => {
+  const [chats, setChats] = useState([
+    {
+      id: '1',
+      name: 'Alice Cooper',
+      lastMessage: 'Hey! How are you doing?',
+      timestamp: new Date(Date.now() - 3600000),
+      unread: 2,
+      trustScore: 95,
+      type: 'direct'
+    },
+    {
+      id: '2',
+      name: 'Bob Smith',
+      lastMessage: 'Meeting at 3pm tomorrow',
+      timestamp: new Date(Date.now() - 7200000),
+      unread: 0,
+      trustScore: 87,
+      type: 'direct'
+    },
+    {
+      id: '3',
+      name: 'Dev Team',
+      lastMessage: 'Charlie: PR #1234 merged',
+      timestamp: new Date(Date.now() - 1800000),
+      unread: 5,
+      trustScore: 92,
+      type: 'group'
+    }
+  ])
+  
+  const [showNewChat, setShowNewChat] = useState(false)
   const [newChatType, setNewChatType] = useState('handle')
-  const [trustScores, setTrustScores] = useState(new Map())
-  const [cryptoTipData, setCryptoTipData] = useState(new Map())
-  const [auditData, setAuditData] = useState(new Map())
+  const [searchTerm, setSearchTerm] = useState('')
 
-  // Enhanced mock chat data with v1.2.3 Alpha features
-  useEffect(() => {
-    const mockChats = [
-      {
-        id: '1',
-        name: 'Alice Cooper',
-        handle: '@alice_ultra',
-        lastMessage: 'Hey! Just shared the contract PDF 📄 + sent 0.001 BTC tip 💰',
-        timestamp: new Date(Date.now() - 5 * 60 * 1000),
-        unreadCount: 2,
-        isOnline: true,
-        profileMode: 'Ultra',
-        trustScore: 95,
-        isEncrypted: true,
-        hasFiles: true,
-        fileTypes: ['pdf', 'doc'],
-        hasCryptoActivity: true,
-        totalTipsReceived: 15,
-        totalTipsSent: 8,
-        botBridgeActive: false,
-        auditEntriesCount: 247
-      },
-      {
-        id: '2',
-        name: 'Bob Smith (Discord)',
-        handle: 'discord://bob_smith#1234',
-        lastMessage: 'Meeting recording ready 🎥 (via Discord Bridge)',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000),
-        unreadCount: 0,
-        isOnline: true,
-        profileMode: 'Public',
-        trustScore: 87,
-        isEncrypted: true,
-        hasFiles: true,
-        fileTypes: ['mp4', 'mp3'],
-        hasCryptoActivity: false,
-        botBridgeActive: true,
-        bridgePlatform: 'discord',
-        auditEntriesCount: 156
-      },
-      {
-        id: '3',
-        name: 'Anonymous User',
-        handle: 'anon_12345',
-        lastMessage: 'Thanks for the secure doc 🔒 Tip: 0.05 ETH sent ⚡',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        unreadCount: 0,
-        isOnline: false,
-        profileMode: 'Anon',
-        trustScore: 0,
-        isEncrypted: true,
-        hasCryptoActivity: true,
-        totalTipsReceived: 3,
-        totalTipsSent: 1,
-        auditEntriesCount: 45
-      },
-      {
-        id: '4',
-        name: 'Charlie Wilson (Telegram)',
-        handle: 'telegram://+1-555-0123',
-        lastMessage: 'Can we reschedule? Sent audio note 🎵 (via Telegram Bridge)',
-        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        unreadCount: 1,
-        isOnline: false,
-        profileMode: 'Basic',
-        trustScore: 76,
-        isEncrypted: true,
-        hasFiles: true,
-        fileTypes: ['mp3'],
-        botBridgeActive: true,
-        bridgePlatform: 'telegram',
-        auditEntriesCount: 89
-      },
-      {
-        id: '5',
-        name: 'Legacy Chat Archive',
-        handle: 'legacy_backup',
-        lastMessage: 'Imported: 247 messages, 15 files, 12 crypto transactions',
-        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-        unreadCount: 0,
-        isOnline: false,
-        profileMode: 'Ultra',
-        trustScore: 100,
-        isEncrypted: true,
-        isLegacy: true,
-        hasFiles: true,
-        fileTypes: ['pdf', 'doc', 'jpg', 'mp3', 'mp4'],
-        hasCryptoActivity: true,
-        totalTipsReceived: 25,
-        totalTipsSent: 12,
-        auditEntriesCount: 512
-      },
-      {
-        id: '6',
-        name: 'Diana Ross (High Trust)',
-        handle: '@diana_dev',
-        lastMessage: 'Code review complete ✅ Moderated 3 operations today',
-        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-        unreadCount: 3,
-        isOnline: true,
-        profileMode: 'Ultra',
-        trustScore: 92,
-        isEncrypted: true,
-        hasFiles: true,
-        fileTypes: ['zip', 'js', 'md'],
-        isModerator: true,
-        moderationCount: 3,
-        auditEntriesCount: 334
-      },
-      {
-        id: '7',
-        name: 'Signal Bridge User',
-        handle: 'signal://+1-555-9999',
-        lastMessage: 'Cross-platform message delivered + DOGE tip 🐕',
-        timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
-        unreadCount: 0,
-        isOnline: true,
-        profileMode: 'Public',
-        trustScore: 85,
-        isEncrypted: true,
-        botBridgeActive: true,
-        bridgePlatform: 'signal',
-        hasCryptoActivity: true,
-        totalTipsReceived: 7,
-        auditEntriesCount: 123
-      },
-      {
-        id: '8',
-        name: 'Twitter Bridge Bot',
-        handle: 'twitter://UltraChat_Bot',
-        lastMessage: 'QR login successful! Welcome back 🚀 SOL tip received',
-        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000),
-        unreadCount: 1,
-        isOnline: false,
-        profileMode: 'Public',
-        trustScore: 78,
-        isEncrypted: true,
-        botBridgeActive: true,
-        bridgePlatform: 'twitter',
-        hasCryptoActivity: true,
-        totalTipsReceived: 4,
-        auditEntriesCount: 67
-      }
-    ]
-    setChats(mockChats)
-    setFilteredChats(mockChats)
-    
-    // Load additional v1.2.3 Alpha data
-    loadEnhancedChatData(mockChats)
-  }, [currentUser, trustManager])
+  // Filter chats based on search term
+  const filteredChats = chats.filter(chat => 
+    chat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
-  // Load enhanced v1.2.3 Alpha chat data
-  const loadEnhancedChatData = async (chats) => {
-    try {
-      // Load real-time trust scores if available
-      if (trustManager) {
-        const trustPromises = chats.map(async (chat) => {
-          try {
-            const score = await trustManager.calculateTrustScore(chat.id)
-            return [chat.id, score]
-          } catch {
-            return [chat.id, { score: chat.trustScore, level: 'unknown' }]
-          }
-        })
-        
-        const trustResults = await Promise.allSettled(trustPromises)
-        const trustMap = new Map()
-        trustResults.forEach((result, index) => {
-          if (result.status === 'fulfilled') {
-            trustMap.set(result.value[0], result.value[1])
-          }
-        })
-        setTrustScores(trustMap)
-      }
-      
-      // Load crypto tip data
-      if (window.UltraChat?.cryptoTipping) {
-        const cryptoMap = new Map()
-        for (const chat of chats) {
-          if (chat.hasCryptoActivity) {
-            try {
-              const tipStats = await window.UltraChat.cryptoTipping.getTipStatistics(chat.id)
-              cryptoMap.set(chat.id, tipStats)
-            } catch (error) {
-              console.error(`Failed to load crypto data for ${chat.id}:`, error)
-            }
-          }
-        }
-        setCryptoTipData(cryptoMap)
-      }
-      
-      // Load audit data
-      if (window.UltraChat?.auditManager) {
-        const auditMap = new Map()
-        for (const chat of chats) {
-          try {
-            const auditEntries = await window.UltraChat.auditManager.getAuditEntries(chat.id, { limit: 10 })
-            auditMap.set(chat.id, {
-              total: auditEntries.length,
-              recent: auditEntries.filter(entry => 
-                Date.now() - new Date(entry.timestamp).getTime() < 24 * 60 * 60 * 1000
-              ).length
-            })
-          } catch (error) {
-            console.error(`Failed to load audit data for ${chat.id}:`, error)
-          }
-        }
-        setAuditData(auditMap)
-      }
-    } catch (error) {
-      console.error('Failed to load enhanced chat data:', error)
-    }
-  }
-
-  // Filter chats based on search query with enhanced v1.2.3 features
-  useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredChats(chats)
-    } else {
-      const query = searchQuery.toLowerCase()
-      const filtered = chats.filter(chat => 
-        chat.name.toLowerCase().includes(query) ||
-        chat.handle.toLowerCase().includes(query) ||
-        chat.lastMessage.toLowerCase().includes(query) ||
-        (chat.bridgePlatform && chat.bridgePlatform.toLowerCase().includes(query)) ||
-        (chat.fileTypes && chat.fileTypes.some(type => type.toLowerCase().includes(query))) ||
-        (chat.hasCryptoActivity && 'crypto'.includes(query)) ||
-        (chat.isModerator && 'moderator'.includes(query))
-      )
-      setFilteredChats(filtered)
-    }
-  }, [searchQuery, chats])
-
-  const formatTimestamp = (timestamp) => {
-    const now = new Date()
-    const diff = now - timestamp
-    const minutes = Math.floor(diff / 60000)
-    const hours = Math.floor(diff / 3600000)
-    const days = Math.floor(diff / 86400000)
-
-    if (minutes < 1) return 'now'
-    if (minutes < 60) return `${minutes}m`
-    if (hours < 24) return `${hours}h`
-    if (days < 7) return `${days}d`
-    return timestamp.toLocaleDateString()
-  }
-
-  const getProfileModeColor = (mode) => {
-    switch (mode) {
-      case 'Ultra': return 'var(--color-mode-ultra)'
-      case 'Public': return 'var(--color-mode-public)'
-      case 'Anon': return 'var(--color-mode-anon)'
-      case 'Basic': return 'var(--color-mode-basic)'
-      default: return 'var(--color-text-muted)'
-    }
-  }
-
-  const getTrustScoreColor = (chat) => {
-    const trustData = trustScores.get(chat.id)
-    const score = trustData ? trustData.score : chat.trustScore
-    
-    if (score >= 90) return 'var(--color-success)'
-    if (score >= 70) return 'var(--color-accent-teal)'
-    if (score >= 50) return 'var(--color-warning)'
-    return 'var(--color-text-muted)'
-  }
-
-  const getBridgePlatformIcon = (platform) => {
-    const icons = {
-      discord: '🎮',
-      telegram: '✈️',
-      twitter: '🐦',
-      signal: '📱'
-    }
-    return icons[platform] || '🌐'
-  }
-
-  const getCryptoActivityIndicator = (chat) => {
-    if (!chat.hasCryptoActivity) return null
-    
-    const tipData = cryptoTipData.get(chat.id)
-    const totalTips = (chat.totalTipsReceived || 0) + (chat.totalTipsSent || 0)
-    
-    if (totalTips > 20) return '💎' // Diamond for high activity
-    if (totalTips > 10) return '💰' // Money bag for medium activity
-    return '💸' // Money with wings for low activity
-  }
-
-  const getModerationIndicator = (chat) => {
-    if (!chat.isModerator) return null
-    return (
-      <span className="moderation-badge" title={`Moderator - ${chat.moderationCount || 0} operations today`}>
-        ⚖️
-      </span>
-    )
-  }
-
-  const handleNewChat = () => {
-    setShowNewChatModal(true)
-  }
-
-  const handleCreateChat = (chatData) => {
+  const handleNewChatSubmit = (chatData) => {
+    // Create new chat object
     const newChat = {
       id: Date.now().toString(),
-      name: chatData.name || (chatData.handle.startsWith('@') ? chatData.handle.substring(1) : chatData.handle),
-      handle: chatData.handle,
-      lastMessage: 'New conversation started',
+      name: chatData.name || chatData.handle,
+      lastMessage: 'New chat started',
       timestamp: new Date(),
-      unreadCount: 0,
-      isOnline: chatData.type === 'qr' || ['discord', 'telegram', 'twitter', 'signal'].includes(chatData.type),
-      profileMode: chatData.profileMode || 'Basic',
-      trustScore: chatData.trustScore || 0,
-      isEncrypted: true,
-      botBridgeActive: ['discord', 'telegram', 'twitter', 'signal'].includes(chatData.type),
-      bridgePlatform: ['discord', 'telegram', 'twitter', 'signal'].includes(chatData.type) ? chatData.type : null,
-      hasCryptoActivity: false,
-      auditEntriesCount: 1
+      unread: 0,
+      trustScore: chatData.trustScore || 50,
+      type: chatData.type,
+      handle: chatData.handle
     }
     
-    setChats(prev => [newChat, ...prev])
-    setFilteredChats(prev => [newChat, ...prev])
+    // Add to chats list
+    setChats([newChat, ...chats])
+    
+    // Select the new chat
     onChatSelect(newChat)
-    setShowNewChatModal(false)
     
-    // Log new chat creation in audit trail
-    if (window.UltraChat?.auditManager) {
-      window.UltraChat.auditManager.logConversationAction('created', {
-        chatId: newChat.id,
-        chatName: newChat.name,
-        chatType: chatData.type,
-        botBridge: newChat.botBridgeActive
-      }, currentUser || { id: 'current_user' })
+    // Close new chat form
+    setShowNewChat(false)
+  }
+
+  const handleNewChatCancel = () => {
+    setShowNewChat(false)
+  }
+
+  const formatTime = (date) => {
+    const now = new Date()
+    const diff = now - date
+    
+    // If today
+    if (diff < 24 * 60 * 60 * 1000) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
+    
+    // If yesterday
+    if (diff < 48 * 60 * 60 * 1000) {
+      return 'Yesterday'
+    }
+    
+    // Otherwise show date
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+  }
+
+  const getTrustColor = (score) => {
+    if (score >= 90) return '#4CAF50' // Green
+    if (score >= 75) return '#2196F3' // Blue
+    if (score >= 50) return '#FF9800' // Orange
+    return '#F44336' // Red
   }
 
   return (
     <div className={`chat-list ${collapsed ? 'collapsed' : 'expanded'} ${hovered ? 'hovered' : ''}`}>
       {/* Header */}
       <div className="chat-list-header">
-        <h2 className={`chat-list-title ${collapsed && !hovered ? 'hidden' : 'visible'}`}>
-          {collapsed && !hovered ? '' : 'Conversations'}
-        </h2>
-        <div className="header-actions">
-          {(!collapsed || hovered) && (
-            <button 
-              className="settings-btn" 
-              title="Settings" 
-              onClick={() => window.dispatchEvent(new CustomEvent('openSettings'))}
-            >
-              ⚙️
-            </button>
-          )}
-          <button 
-            className="new-chat-btn" 
-            title="New Chat" 
-            onClick={handleNewChat}
-          >
-            {collapsed && !hovered ? '+' : '+'}
-          </button>
-        </div>
+        <h2>Chats</h2>
+        <button 
+          className="new-chat-btn"
+          onClick={() => setShowNewChat(true)}
+          title="New Chat"
+        >
+          +
+        </button>
       </div>
-
-      {/* Search - Hidden when collapsed unless hovered */}
-      {(!collapsed || hovered) && (
+      
+      {/* Search */}
+      {!collapsed && (
         <div className="chat-search">
           <input
             type="text"
             placeholder="Search chats..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       )}
-
-      {/* Chat List */}
-      <div className="chats-container">
-        {filteredChats.length === 0 ? (
-          <div className="no-chats">
-            <p>No conversations found</p>
-            <button className="btn btn-primary" onClick={handleNewChat}>Start New Chat</button>
-          </div>
-        ) : (
-          filteredChats.map(chat => (
-            <div
-              key={chat.id}
-              className={`chat-item ${selectedChat?.id === chat.id ? 'selected' : ''}`}
-              onClick={() => onChatSelect(chat)}
-            >
-              {/* Enhanced Avatar and Status with v1.2.3 indicators */}
-              <div className="chat-avatar">
-                <div 
-                  className={`avatar-circle ${
-                    chat.isLegacy ? 'legacy-chat' : ''
-                  } ${
-                    chat.botBridgeActive ? 'bot-bridge' : ''
-                  }`}
-                  title={collapsed && !hovered ? `${chat.name} (${chat.handle})` : ''}
-                >
-                  {chat.isLegacy ? '📁' : 
-                   chat.botBridgeActive ? getBridgePlatformIcon(chat.bridgePlatform) :
-                   chat.name.charAt(0).toUpperCase()}
-                </div>
-                
-                {/* Enhanced status indicators */}
-                {chat.isOnline && <div className="online-indicator"></div>}
-                {chat.hasFiles && (
-                  <div className="file-indicator" title={`Files: ${chat.fileTypes?.join(', ')}`}>
-                    📄
-                  </div>
-                )}
-                {getCryptoActivityIndicator(chat) && (
-                  <div className="crypto-indicator" title={`Crypto tips: ${(chat.totalTipsReceived || 0) + (chat.totalTipsSent || 0)}`}>
-                    {getCryptoActivityIndicator(chat)}
-                  </div>
-                )}
-                {getModerationIndicator(chat)}
-              </div>
-
-              {/* Chat Info */}
-              <div className="chat-info">
-                <div className="chat-header">
-                  <span className="chat-name">{chat.name}</span>
-                  <span className="chat-timestamp">{formatTimestamp(chat.timestamp)}</span>
-                </div>
-                
-                <div className="chat-details">
-                  <span className="chat-handle">{chat.handle}</span>
-                  <div className="chat-badges">
-                    <span 
-                      className="profile-mode-badge"
-                      style={{ color: getProfileModeColor(chat.profileMode) }}
-                    >
-                      {chat.profileMode}
-                    </span>
-                    
-                    {/* Enhanced trust score with real-time data */}
-                    {chat.trustScore > 0 && (
-                      <span 
-                        className="trust-score"
-                        style={{ color: getTrustScoreColor(chat) }}
-                        title={`Trust Score: ${trustScores.get(chat.id)?.score || chat.trustScore}% (${trustScores.get(chat.id)?.level || 'calculated'})`}
-                      >
-                        {trustScores.get(chat.id)?.score || chat.trustScore}%
-                      </span>
-                    )}
-                    
-                    {/* Bot Bridge indicator */}
-                    {chat.botBridgeActive && (
-                      <span className="bridge-badge" title={`Connected via ${chat.bridgePlatform}`}>
-                        🌐
-                      </span>
-                    )}
-                    
-                    {/* Audit activity indicator */}
-                    {auditData.get(chat.id)?.recent > 0 && (
-                      <span className="audit-badge" title={`${auditData.get(chat.id)?.recent} recent audit entries`}>
-                        📊
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="chat-preview">
-                  <span className="last-message">{chat.lastMessage}</span>
-                  <div className="chat-meta">
-                    {chat.isEncrypted && <span className="encryption-icon">🔒</span>}
-                    {chat.hasCryptoActivity && <span className="crypto-meta-icon">💰</span>}
-                    {chat.unreadCount > 0 && (
-                      <span className="unread-count">{chat.unreadCount}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* New Chat Modal */}
-      {showNewChatModal && (
-        <div className="new-chat-modal-overlay" onClick={() => setShowNewChatModal(false)}>
-          <div className="new-chat-modal" onClick={e => e.stopPropagation()}>
+      
+      {/* New Chat Form */}
+      {showNewChat && (
+        <div className="new-chat-overlay">
+          <div className="new-chat-modal">
             <div className="modal-header">
-              <h3>Start New Chat</h3>
-              <button onClick={() => setShowNewChatModal(false)}>✕</button>
+              <h3>Create New Chat</h3>
+              <button 
+                className="close-btn" 
+                onClick={() => setShowNewChat(false)}
+              >
+                ×
+              </button>
             </div>
             
-            <div className="chat-type-selector">
-              <button 
-                className={`type-btn ${newChatType === 'handle' ? 'active' : ''}`}
-                onClick={() => setNewChatType('handle')}
-              >
-                📱 Handle/Phone
-              </button>
-              <button 
-                className={`type-btn ${newChatType === 'qr' ? 'active' : ''}`}
-                onClick={() => setNewChatType('qr')}
-              >
-                📱 QR Code
-              </button>
-              <button 
-                className={`type-btn ${newChatType === 'discord' ? 'active' : ''}`}
-                onClick={() => setNewChatType('discord')}
-              >
-                🎮 Discord
-              </button>
-              <button 
-                className={`type-btn ${newChatType === 'telegram' ? 'active' : ''}`}
-                onClick={() => setNewChatType('telegram')}
-              >
-                ✈️ Telegram
-              </button>
-              <button 
-                className={`type-btn ${newChatType === 'twitter' ? 'active' : ''}`}
-                onClick={() => setNewChatType('twitter')}
-              >
-                🐦 Twitter/X
-              </button>
-            </div>
-
-            <NewChatForm 
-              type={newChatType} 
-              onSubmit={handleCreateChat}
-              onCancel={() => setShowNewChatModal(false)}
-            />
+            {!newChatType ? (
+              <div className="chat-type-selector">
+                <h4>Select Chat Type</h4>
+                <div className="chat-type-options">
+                  <button 
+                    className="chat-type-option"
+                    onClick={() => setNewChatType('handle')}
+                  >
+                    <span className="icon">👤</span>
+                    <span>Direct Chat</span>
+                    <small>Chat with a user via handle, phone, or email</small>
+                  </button>
+                  
+                  <button 
+                    className="chat-type-option"
+                    onClick={() => setNewChatType('qr')}
+                  >
+                    <span className="icon">📱</span>
+                    <span>QR Connect</span>
+                    <small>Connect via QR code from another device</small>
+                  </button>
+                  
+                  <button 
+                    className="chat-type-option"
+                    onClick={() => setNewChatType('discord')}
+                  >
+                    <span className="icon">🎮</span>
+                    <span>Discord</span>
+                    <small>Connect via Discord bot</small>
+                  </button>
+                  
+                  <button 
+                    className="chat-type-option"
+                    onClick={() => setNewChatType('group')}
+                  >
+                    <span className="icon">👥</span>
+                    <span>Group Chat</span>
+                    <small>Create a new group with multiple members</small>
+                  </button>
+                </div>
+                
+                <div className="form-actions">
+                  <button 
+                    type="button" 
+                    className="cancel-btn" 
+                    onClick={() => setShowNewChat(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <NewChatForm 
+                type={newChatType}
+                onSubmit={handleNewChatSubmit}
+                onCancel={handleNewChatCancel}
+              />
+            )}
           </div>
+        </div>
+      )}
+      
+      {/* Chat List */}
+      <div className="chat-items">
+        {filteredChats.map(chat => (
+          <div
+            key={chat.id}
+            className={`chat-item ${selectedChat?.id === chat.id ? 'selected' : ''}`}
+            onClick={() => onChatSelect(chat)}
+          >
+            <div className="chat-avatar">
+              {chat.type === 'group' ? '👥' : '👤'}
+            </div>
+            
+            <div className="chat-info">
+              <div className="chat-header">
+                <h4>{chat.name}</h4>
+                <span className="chat-time">{formatTime(chat.timestamp)}</span>
+              </div>
+              
+              <div className="chat-preview">
+                <p>{chat.lastMessage}</p>
+                {chat.unread > 0 && (
+                  <span className="unread-badge">{chat.unread}</span>
+                )}
+              </div>
+            </div>
+            
+            <div className="chat-meta">
+              <div 
+                className="trust-indicator"
+                style={{ color: getTrustColor(chat.trustScore) }}
+                title={`Trust Score: ${chat.trustScore}`}
+              >
+                ●
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Quick Actions */}
+      {!collapsed && (
+        <div className="quick-actions">
+          <button 
+            className="quick-action-btn"
+            onClick={() => {
+              setNewChatType(null)
+              setShowNewChat(true)
+            }}
+            title="New Chat"
+          >
+            🆕 New Chat
+          </button>
+          
+          <button 
+            className="quick-action-btn"
+            onClick={() => {
+              // Trigger voice call
+              window.dispatchEvent(new CustomEvent('callEvent', {
+                detail: { type: 'voice', chatId: selectedChat?.id }
+              }))
+            }}
+            title="Voice Call"
+            disabled={!selectedChat}
+          >
+            📞 Voice Call
+          </button>
+          
+          <button 
+            className="quick-action-btn"
+            onClick={() => {
+              // Trigger video call
+              window.dispatchEvent(new CustomEvent('callEvent', {
+                detail: { type: 'video', chatId: selectedChat?.id }
+              }))
+            }}
+            title="Video Call"
+            disabled={!selectedChat}
+          >
+            🎥 Video Call
+          </button>
         </div>
       )}
     </div>

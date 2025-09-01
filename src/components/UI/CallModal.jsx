@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { CALL_STATES, CALL_TYPES } from '../../utils/Constants'
 import './CallModal.css'
 

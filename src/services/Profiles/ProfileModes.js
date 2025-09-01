@@ -6,7 +6,13 @@ class ProfileModes {
     BASIC: 'Basic',
     PUBLIC: 'Public',
     ANON: 'Anon',
-    ULTRA: 'Ultra'
+    ULTRA: 'Ultra',
+    LEGACY: 'Legacy', // Merged Legacy/OG
+    PRO: 'Pro',
+    ULTRA_ELITE: 'Ultra Elite',
+    ANON_PRO: 'Anon Pro',
+    STEALTH: 'Stealth',
+    LOCKDOWN: 'Lockdown'
   }
 
   static getModeConfig(mode) {
@@ -49,7 +55,7 @@ class ProfileModes {
           socialHandles: true,
           trustSystem: false,
           anonymity: false,
-          crossService: true,
+          crossService: false,
           encryption: true,
           localStorage: true,
           publicDirectory: true
@@ -79,7 +85,7 @@ class ProfileModes {
           socialHandles: false,
           trustSystem: false,
           anonymity: true,
-          crossService: false,
+          crossService: true,
           encryption: true,
           localStorage: false,
           sessionBased: true
@@ -102,7 +108,7 @@ class ProfileModes {
       [this.MODES.ULTRA]: {
         id: 'ultra',
         name: 'Ultra',
-        description: 'Enhanced features with Web of Trust and verification',
+        description: 'Unified access to all your social accounts with enhanced features',
         icon: '⚡',
         color: 'var(--color-mode-ultra)',
         features: {
@@ -116,7 +122,9 @@ class ProfileModes {
           publicDirectory: true,
           endorsements: true,
           verification: true,
-          advancedEncryption: true
+          advancedEncryption: true,
+          voiceChat: true,
+          eventsCalendar: true
         },
         restrictions: {
           maxBioLength: 1000,
@@ -132,19 +140,242 @@ class ProfileModes {
           publicVisibility: true,
           cryptographicIdentity: true
         }
+      },
+      
+      [this.MODES.LEGACY]: { // Merged Legacy/OG
+        id: 'legacy',
+        name: 'Legacy/OG',
+        description: 'Historical user privileges with standard chat, voice, and event access',
+        icon: '👑',
+        color: 'var(--color-mode-legacy)',
+        features: {
+          messaging: true,
+          socialHandles: true,
+          trustSystem: true,
+          anonymity: false,
+          crossService: true,
+          encryption: true,
+          localStorage: true,
+          publicDirectory: true,
+          endorsements: true,
+          verification: true,
+          ogFeatures: true,
+          prioritySupport: true,
+          voiceChat: true,
+          eventsCalendar: true
+        },
+        restrictions: {
+          maxBioLength: 1000,
+          avatarRequired: false,
+          socialHandlesAllowed: true,
+          maxSocialHandles: 10
+        },
+        privacy: {
+          trackingResistance: 'medium',
+          dataRetention: 'local',
+          metadataMinimization: false,
+          publicVisibility: true
+        }
+      },
+      
+      [this.MODES.PRO]: {
+        id: 'pro',
+        name: 'Pro',
+        description: 'Professional user with enhanced capabilities and full feature set',
+        icon: '💼',
+        color: 'var(--color-mode-pro)',
+        features: {
+          messaging: true,
+          socialHandles: true,
+          trustSystem: true,
+          anonymity: false,
+          crossService: true,
+          encryption: true,
+          localStorage: true,
+          publicDirectory: true,
+          endorsements: true,
+          verification: true,
+          proFeatures: true,
+          voiceChat: true,
+          eventsCalendar: true,
+          advancedEncryption: true
+        },
+        restrictions: {
+          maxBioLength: 1500,
+          avatarRequired: false,
+          socialHandlesAllowed: true,
+          maxSocialHandles: 12
+        },
+        privacy: {
+          trackingResistance: 'medium',
+          dataRetention: 'local',
+          metadataMinimization: false,
+          publicVisibility: true
+        }
+      },
+      
+      [this.MODES.ULTRA_ELITE]: {
+        id: 'ultra-elite',
+        name: 'Ultra Elite',
+        description: 'Elite user with maximum features and priority access',
+        icon: '💎',
+        color: 'var(--color-mode-ultra-elite)',
+        features: {
+          messaging: true,
+          socialHandles: true,
+          trustSystem: true,
+          anonymity: false,
+          crossService: true,
+          encryption: true,
+          localStorage: true,
+          publicDirectory: true,
+          endorsements: true,
+          verification: true,
+          advancedEncryption: true,
+          eliteFeatures: true,
+          prioritySupport: true,
+          customThemes: true,
+          voiceChat: true,
+          eventsCalendar: true
+        },
+        restrictions: {
+          maxBioLength: 2000,
+          avatarRequired: false,
+          socialHandlesAllowed: true,
+          maxSocialHandles: 20
+        },
+        privacy: {
+          trackingResistance: 'high',
+          dataRetention: 'local',
+          metadataMinimization: true,
+          publicVisibility: true
+        }
+      },
+      
+      [this.MODES.ANON_PRO]: {
+        id: 'anon-pro',
+        name: 'Anon Pro',
+        description: 'Professional anonymity with enhanced privacy features and stealth/lockdown modes',
+        icon: '🎭',
+        color: 'var(--color-mode-anon-pro)',
+        features: {
+          messaging: true,
+          socialHandles: false,
+          trustSystem: true,
+          anonymity: true,
+          crossService: true,
+          encryption: true,
+          localStorage: true,
+          sessionBased: false,
+          advancedPrivacy: true,
+          stealthMode: true,
+          lockdownMode: true
+        },
+        restrictions: {
+          maxBioLength: 500,
+          avatarRequired: false,
+          socialHandlesAllowed: false,
+          displayNameEditable: true,
+          persistentData: true
+        },
+        privacy: {
+          trackingResistance: 'maximum',
+          dataRetention: 'local',
+          metadataMinimization: true,
+          temporaryIdentity: false,
+          advancedAnonymity: true
+        }
+      },
+      
+      [this.MODES.STEALTH]: {
+        id: 'stealth',
+        name: 'Stealth',
+        description: 'Maximum privacy mode with minimal digital footprint',
+        icon: '👻',
+        color: 'var(--color-mode-stealth)',
+        features: {
+          messaging: true,
+          socialHandles: false,
+          trustSystem: false,
+          anonymity: true,
+          crossService: false,
+          encryption: true,
+          localStorage: true,
+          sessionBased: false,
+          stealthMode: true,
+          minimalMetadata: true
+        },
+        restrictions: {
+          maxBioLength: 100,
+          avatarRequired: false,
+          socialHandlesAllowed: false,
+          displayNameEditable: true,
+          persistentData: true
+        },
+        privacy: {
+          trackingResistance: 'maximum',
+          dataRetention: 'local',
+          metadataMinimization: true,
+          temporaryIdentity: false,
+          advancedAnonymity: true,
+          stealthProtection: true
+        }
+      },
+      
+      [this.MODES.LOCKDOWN]: {
+        id: 'lockdown',
+        name: 'Lockdown',
+        description: 'Maximum security mode with restricted communications',
+        icon: '🔒',
+        color: 'var(--color-mode-lockdown)',
+        features: {
+          messaging: true,
+          socialHandles: false,
+          trustSystem: true,
+          anonymity: true,
+          crossService: false,
+          encryption: true,
+          localStorage: true,
+          sessionBased: false,
+          advancedEncryption: true,
+          lockdownMode: true,
+          verificationRequired: true
+        },
+        restrictions: {
+          maxBioLength: 0,
+          avatarRequired: false,
+          socialHandlesAllowed: false,
+          displayNameEditable: false,
+          persistentData: true,
+          contactRestrictions: true
+        },
+        privacy: {
+          trackingResistance: 'maximum',
+          dataRetention: 'local',
+          metadataMinimization: true,
+          temporaryIdentity: false,
+          advancedAnonymity: true,
+          lockdownProtection: true
+        }
       }
     }
 
-    return configs[mode] || null
+    return configs[mode] || configs[this.MODES.BASIC]
   }
 
   static validateModeTransition(fromMode, toMode) {
     // Define allowed transitions
     const allowedTransitions = {
-      [this.MODES.BASIC]: [this.MODES.PUBLIC, this.MODES.ANON, this.MODES.ULTRA],
-      [this.MODES.PUBLIC]: [this.MODES.BASIC, this.MODES.ANON, this.MODES.ULTRA],
-      [this.MODES.ANON]: [this.MODES.BASIC, this.MODES.PUBLIC, this.MODES.ULTRA],
-      [this.MODES.ULTRA]: [this.MODES.BASIC, this.MODES.PUBLIC, this.MODES.ANON]
+      [this.MODES.BASIC]: [this.MODES.PUBLIC, this.MODES.ANON, this.MODES.ULTRA, this.MODES.LEGACY, this.MODES.PRO, this.MODES.ULTRA_ELITE, this.MODES.ANON_PRO, this.MODES.STEALTH, this.MODES.LOCKDOWN],
+      [this.MODES.PUBLIC]: [this.MODES.BASIC, this.MODES.ANON, this.MODES.ULTRA, this.MODES.LEGACY, this.MODES.PRO, this.MODES.ULTRA_ELITE, this.MODES.ANON_PRO, this.MODES.STEALTH, this.MODES.LOCKDOWN],
+      [this.MODES.ANON]: [this.MODES.BASIC, this.MODES.PUBLIC, this.MODES.ULTRA, this.MODES.LEGACY, this.MODES.PRO, this.MODES.ULTRA_ELITE, this.MODES.ANON_PRO, this.MODES.STEALTH, this.MODES.LOCKDOWN],
+      [this.MODES.ULTRA]: [this.MODES.BASIC, this.MODES.PUBLIC, this.MODES.ANON, this.MODES.LEGACY, this.MODES.PRO, this.MODES.ULTRA_ELITE, this.MODES.ANON_PRO, this.MODES.STEALTH, this.MODES.LOCKDOWN],
+      [this.MODES.LEGACY]: [this.MODES.BASIC, this.MODES.PUBLIC, this.MODES.ANON, this.MODES.ULTRA, this.MODES.PRO, this.MODES.ULTRA_ELITE, this.MODES.ANON_PRO, this.MODES.STEALTH, this.MODES.LOCKDOWN],
+      [this.MODES.PRO]: [this.MODES.BASIC, this.MODES.PUBLIC, this.MODES.ANON, this.MODES.ULTRA, this.MODES.LEGACY, this.MODES.ULTRA_ELITE, this.MODES.ANON_PRO, this.MODES.STEALTH, this.MODES.LOCKDOWN],
+      [this.MODES.ULTRA_ELITE]: [this.MODES.BASIC, this.MODES.PUBLIC, this.MODES.ANON, this.MODES.ULTRA, this.MODES.LEGACY, this.MODES.PRO, this.MODES.ANON_PRO, this.MODES.STEALTH, this.MODES.LOCKDOWN],
+      [this.MODES.ANON_PRO]: [this.MODES.BASIC, this.MODES.PUBLIC, this.MODES.ANON, this.MODES.ULTRA, this.MODES.LEGACY, this.MODES.PRO, this.MODES.ULTRA_ELITE, this.MODES.STEALTH, this.MODES.LOCKDOWN],
+      [this.MODES.STEALTH]: [this.MODES.BASIC, this.MODES.PUBLIC, this.MODES.ANON, this.MODES.ULTRA, this.MODES.LEGACY, this.MODES.PRO, this.MODES.ULTRA_ELITE, this.MODES.ANON_PRO, this.MODES.LOCKDOWN],
+      [this.MODES.LOCKDOWN]: [this.MODES.BASIC, this.MODES.PUBLIC, this.MODES.ANON, this.MODES.ULTRA, this.MODES.LEGACY, this.MODES.PRO, this.MODES.ULTRA_ELITE, this.MODES.ANON_PRO, this.MODES.STEALTH]
     }
 
     return allowedTransitions[fromMode]?.includes(toMode) || false
@@ -214,7 +445,11 @@ class ProfileModes {
       canBePubliclyDiscoverable: config.features.publicDirectory || false,
       hasDataPersistence: !config.features.sessionBased,
       maxBioLength: config.restrictions.maxBioLength,
-      maxSocialHandles: config.restrictions.maxSocialHandles || 0
+      maxSocialHandles: config.restrictions.maxSocialHandles || 0,
+      canUseVoiceChat: config.features.voiceChat || false,
+      canUseEventsCalendar: config.features.eventsCalendar || false,
+      canUseStealthMode: config.features.stealthMode || false,
+      canUseLockdownMode: config.features.lockdownMode || false
     }
   }
 
@@ -252,12 +487,44 @@ class ProfileModes {
       needSocialHandles = false,
       wantTrustSystem = false,
       needCrossService = false,
-      temporaryUse = false
+      temporaryUse = false,
+      maximumSecurity = false,
+      eliteStatus = false
     } = userPreferences
 
+    // Lockdown for maximum security
+    if (maximumSecurity) {
+      return this.MODES.LOCKDOWN
+    }
+
+    // Stealth for maximum privacy
+    if (prioritizePrivacy === 'maximum') {
+      return this.MODES.STEALTH
+    }
+
     // Anonymous for temporary use
-    if (temporaryUse || prioritizePrivacy === 'maximum') {
+    if (temporaryUse) {
       return this.MODES.ANON
+    }
+
+    // Ultra Elite for elite users
+    if (eliteStatus) {
+      return this.MODES.ULTRA_ELITE
+    }
+
+    // Legacy for legacy users
+    if (userPreferences.isLegacy) {
+      return this.MODES.LEGACY
+    }
+
+    // Pro for professional users
+    if (userPreferences.isPro || userPreferences.professionalUse) {
+      return this.MODES.PRO
+    }
+
+    // Anon Pro for professional anonymity
+    if (userPreferences.professionalAnonymity) {
+      return this.MODES.ANON_PRO
     }
 
     // Ultra for full features

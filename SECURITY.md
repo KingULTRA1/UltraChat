@@ -1,4 +1,4 @@
-# Security Policy - UltraChat v1.2.3 Alpha
+# Security Policy - UltraChat v1.2.3.4 Final
 
 ## Supported Versions
 

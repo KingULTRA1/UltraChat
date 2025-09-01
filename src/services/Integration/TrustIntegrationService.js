@@ -1,17 +1,14 @@
 /*
- * Trust Integration Service - UltraChat v1.2.3 Alpha
+ * Trust Integration Service - UltraChat v1.2.3.4 Final
  * 
- * Integrates Web of Trust with message/file management and moderation:
- * - Permission validation based on trust levels
- * - Moderation workflow integration
- * - Trust-based access controls
- * - Dynamic permission updates
+ * Integrates Web of Trust system with messaging and profile management
  * 
- * Ultra seamless integration of all trust-based features
+ * Privacy-First: All trust data encrypted and stored locally
+ * Zero-Tracking: No analytics or external data transmission
  */
 
 import LocalStorage from '../../utils/LocalStorage'
-import Constants from '../../utils/Constants'
+import * as Constants from '../../utils/Constants';
 
 class TrustIntegrationService {
   constructor(trustManager, auditManager, messageManagement, fileManager) {

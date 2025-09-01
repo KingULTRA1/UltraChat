@@ -180,7 +180,7 @@ class LocalStorage {
   }
 
   async getMessages(conversationId, limit = 50) {
-    const messagesKey = `messages_${conversationId}`
+    const messagesKey = `messages_${conversationId}_private`
     const messages = await this.retrieve(messagesKey, [])
     
     if (!Array.isArray(messages)) return []
@@ -190,13 +190,32 @@ class LocalStorage {
   }
 
   async deleteConversation(conversationId) {
-    const messagesKey = `messages_${conversationId}`
+    const messagesKey = `messages_${conversationId}_private`
     this.remove(messagesKey)
     
     // Also remove from conversations list
     const conversations = await this.retrieve('conversations', [])
     const updated = conversations.filter(c => c.id !== conversationId)
     await this.store('conversations', updated)
+  }
+
+  // Store a conversation
+  async storeConversation(conversation) {
+    const conversations = await this.retrieve('conversations', [])
+    const existingIndex = conversations.findIndex(c => c.id === conversation.id)
+    
+    if (existingIndex >= 0) {
+      conversations[existingIndex] = conversation
+    } else {
+      conversations.push(conversation)
+    }
+    
+    return await this.store('conversations', conversations)
+  }
+
+  // Get all conversations
+  async getConversations() {
+    return await this.retrieve('conversations', [])
   }
 
   // User data specific methods (kept locally, never synced)

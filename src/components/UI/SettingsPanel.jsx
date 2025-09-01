@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import PrivateDataManager from '../../services/Settings/PrivateDataManager'
 import './SettingsPanel.css'
 

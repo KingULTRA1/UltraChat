@@ -1,499 +1,236 @@
 // Trust Manager - Web of Trust System
 // Handles endorsements, trust calculations, and verification
 
-import LocalStorage from '../../utils/LocalStorage.js'
-import CryptoUtils from '../../utils/CryptoUtils.js'
-import { TRUST_LEVELS, PROFILE_MODES } from '../../utils/Constants.js'
+import CryptoUtils from '../../utils/CryptoUtils.js';
+import LocalStorage from '../../utils/LocalStorage.js';
+import * as Constants from '../../utils/Constants.js';
 
 class TrustManager {
   constructor() {
-    this.storage = new LocalStorage()
-    this.crypto = new CryptoUtils()
-    this.initialized = false
+    this.signingKey = null;
+    this.publicKey = null;
+    this.privateKey = null;
+    this.isInitialized = false;
+    this.endorsements = new Map();
+    this.trustScores = new Map();
   }
 
-  // Initialize trust system
   async initialize() {
     try {
-      await this.storage.initialize()
+      console.log('TrustManager: Starting initialization');
       
-      // Initialize crypto keys for signing endorsements
-      await this.initializeCryptoKeys()
+      // Check if we have stored keys
+      const storedSigningKey = await LocalStorage.getItem('signingKey');
+      const storedPublicKey = await LocalStorage.getItem('publicKey');
+      const storedPrivateKey = await LocalStorage.getItem('privateKey');
       
-      this.initialized = true
-      return true
-    } catch (error) {
-      console.error('Trust manager initialization failed:', error)
-      // Allow partial initialization
-      this.initialized = true
-      return false
-    }
-  }
-
-  // Initialize cryptographic keys for signing
-  async initializeCryptoKeys() {
-    try {
-      // Check if keys already exist
-      let keyPair = await this.storage.retrieve('trust_keys', null)
+      console.log('TrustManager: Checking for stored keys');
       
-      if (!keyPair) {
-        // Generate new RSA key pair for signing
-        const cryptoKeyPair = await crypto.subtle.generateKey(
-          {
-            name: 'RSA-PSS',
-            modulusLength: 2048,
-            publicExponent: new Uint8Array([1, 0, 1]),
-            hash: 'SHA-256'
-          },
-          true,
-          ['sign', 'verify']
-        )
+      if (storedSigningKey && storedPublicKey && storedPrivateKey) {
+        console.log('TrustManager: Found stored keys, importing them');
+        try {
+          // Import existing keys
+          this.signingKey = await crypto.subtle.importKey(
+            'jwk',
+            storedSigningKey,
+            { name: 'ECDSA', namedCurve: 'P-256' },
+            true,
+            ['sign']
+          );
+          
+          this.publicKey = await crypto.subtle.importKey(
+            'jwk',
+            storedPublicKey,
+            { name: 'ECDSA', namedCurve: 'P-256' },
+            true,
+            ['verify']
+          );
+          
+          this.privateKey = await crypto.subtle.importKey(
+            'jwk',
+            storedPrivateKey,
+            { name: 'ECDSA', namedCurve: 'P-256' },
+            true,
+            ['sign']
+          );
+          
+          console.log('TrustManager: Successfully imported stored keys');
+        } catch (importError) {
+          console.warn('TrustManager: Failed to import stored keys, generating new ones:', importError);
+          await this.generateNewKeys();
+        }
+      } else {
+        console.log('TrustManager: No stored keys found, generating new ones');
+        // Generate new keys if none exist
+        await this.generateNewKeys();
+      }
+      
+      // Load endorsements and trust scores
+      console.log('TrustManager: Loading endorsements and trust scores');
+      try {
+        const storedEndorsements = await LocalStorage.getItem('endorsements');
+        const storedTrustScores = await LocalStorage.getItem('trustScores');
         
-        // Export keys to JWK format for storage
-        const publicKeyJWK = await crypto.subtle.exportKey('jwk', cryptoKeyPair.publicKey)
-        const privateKeyJWK = await crypto.subtle.exportKey('jwk', cryptoKeyPair.privateKey)
-        
-        keyPair = {
-          publicKey: publicKeyJWK,
-          privateKey: privateKeyJWK
+        if (storedEndorsements) {
+          this.endorsements = new Map(Object.entries(storedEndorsements));
+          console.log('TrustManager: Loaded endorsements:', this.endorsements.size);
         }
         
-        // Store keys
-        await this.storage.store('trust_keys', keyPair)
+        if (storedTrustScores) {
+          this.trustScores = new Map(Object.entries(storedTrustScores));
+          console.log('TrustManager: Loaded trust scores:', this.trustScores.size);
+        }
+      } catch (loadError) {
+        console.warn('TrustManager: Warning loading endorsements/trust scores:', loadError);
       }
       
-      // Import keys for use
-      this.signingKeys = {
-        publicKey: await crypto.subtle.importKey(
-          'jwk',
-          keyPair.publicKey,
-          {
-            name: 'RSA-PSS',
-            hash: 'SHA-256'
-          },
-          true,
-          ['verify']
-        ),
-        privateKey: await crypto.subtle.importKey(
-          'jwk',
-          keyPair.privateKey,
-          {
-            name: 'RSA-PSS',
-            hash: 'SHA-256'
-          },
-          true,
-          ['sign']
-        )
-      }
-      
-      console.log('Trust signing keys initialized')
+      this.isInitialized = true;
+      console.log('TrustManager: Initialization completed successfully');
     } catch (error) {
-      console.error('Failed to initialize crypto keys:', error)
-      // Set null keys to indicate signing is not available
-      this.signingKeys = { publicKey: null, privateKey: null }
+      console.error('TrustManager: Initialization error:', error);
+      console.error('TrustManager: Error stack:', error.stack);
+      
+      // Even if initialization fails, we'll mark as initialized to prevent blocking the app
+      this.isInitialized = true;
+      console.log('TrustManager: Marking as initialized despite errors to prevent app blocking');
     }
   }
 
-  // Create an endorsement
-  async createEndorsement(endorseeId, endorsementData) {
-    if (!this.initialized) await this.initialize()
+  async generateNewKeys() {
+    try {
+      const keyPair = await crypto.subtle.generateKey(
+        { name: 'ECDSA', namedCurve: 'P-256' },
+        true,
+        ['sign', 'verify']
+      );
+      
+      this.signingKey = keyPair.privateKey;
+      this.publicKey = keyPair.publicKey;
+      
+      // Export and store keys
+      const signingKeyJwk = await crypto.subtle.exportKey('jwk', this.signingKey);
+      const publicKeyJwk = await crypto.subtle.exportKey('jwk', this.publicKey);
+      const privateKeyJwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
+      
+      await LocalStorage.setItem('signingKey', signingKeyJwk);
+      await LocalStorage.setItem('publicKey', publicKeyJwk);
+      await LocalStorage.setItem('privateKey', privateKeyJwk);
+      
+      console.log('TrustManager: Successfully generated and stored new keys');
+    } catch (keyError) {
+      console.error('TrustManager: Failed to generate new keys:', keyError);
+      throw keyError;
+    }
+  }
 
+  async createEndorsement(targetUserId, trustLevel, comment = '') {
+    if (!this.isInitialized || !this.signingKey) {
+      console.warn('TrustManager: Not initialized or missing signing key');
+      throw new Error('TrustManager not properly initialized');
+    }
+    
     try {
       const endorsement = {
-        id: this.crypto.generateUUID(),
-        endorseeId,
-        endorserId: await this.getCurrentUserId(),
-        message: endorsementData.message || '',
-        trustScore: endorsementData.trustScore || 50,
-        categories: endorsementData.categories || ['general'],
-        timestamp: new Date().toISOString(),
-        expires: endorsementData.expires || null,
-        signature: null
-      }
-
-      // Sign the endorsement for verification
-      endorsement.signature = await this.signEndorsement(endorsement)
-
-      // Store locally
-      await this.storeEndorsement(endorsement)
-
-      return endorsement
-    } catch (error) {
-      throw new Error(`Failed to create endorsement: ${error.message}`)
-    }
-  }
-
-  // Sign an endorsement
-  async signEndorsement(endorsement) {
-    try {
-      // Check if we have signing keys available
-      if (!this.signingKeys || !this.signingKeys.privateKey) {
-        console.warn('No signing keys available, skipping signature')
-        return 'unsigned' // Return placeholder signature
-      }
+        endorser: 'current_user', // This would be the current user's ID in a real implementation
+        target: targetUserId,
+        trustLevel,
+        comment,
+        timestamp: Date.now()
+      };
       
-      const dataToSign = {
-        endorseeId: endorsement.endorseeId,
-        endorserId: endorsement.endorserId,
-        message: endorsement.message,
-        trustScore: endorsement.trustScore,
-        timestamp: endorsement.timestamp
-      }
-
-      // Use Web Crypto API directly instead of CryptoUtils
-      const encoder = new TextEncoder()
-      const dataBuffer = encoder.encode(JSON.stringify(dataToSign))
-      
+      // Create a signature for the endorsement
+      const encoder = new TextEncoder();
+      const data = encoder.encode(JSON.stringify(endorsement));
       const signature = await crypto.subtle.sign(
-        {
-          name: 'RSA-PSS',
-          saltLength: 32
-        },
-        this.signingKeys.privateKey,
-        dataBuffer
-      )
+        { name: 'ECDSA', hash: { name: 'SHA-256' } },
+        this.signingKey,
+        data
+      );
       
-      // Convert to base64 for storage
-      const bytes = new Uint8Array(signature)
-      let binary = ''
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i])
-      }
-      return btoa(binary)
+      
+      const fullEndorsement = {
+        ...endorsement,
+        signature: Array.from(new Uint8Array(signature))
+      };
+      
+      // Store the endorsement
+      this.endorsements.set(targetUserId, fullEndorsement);
+      await LocalStorage.setItem('endorsements', Object.fromEntries(this.endorsements));
+      
+      // Update trust score
+      this.updateTrustScore(targetUserId, trustLevel);
+      
+      return fullEndorsement;
     } catch (error) {
-      console.warn('Failed to sign endorsement, using fallback:', error.message)
-      return 'fallback_signature_' + Date.now()
+      console.error('TrustManager: Error creating endorsement:', error);
+      throw error;
     }
   }
 
-  // Verify an endorsement signature
-  async verifyEndorsement(endorsement, publicKey) {
+  updateTrustScore(userId, trustLevel) {
     try {
-      const dataToVerify = {
-        endorseeId: endorsement.endorseeId,
-        endorserId: endorsement.endorserId,
-        message: endorsement.message,
-        trustScore: endorsement.trustScore,
-        timestamp: endorsement.timestamp
-      }
-
-      return await this.crypto.verify(
-        JSON.stringify(dataToVerify),
-        endorsement.signature,
-        publicKey
-      )
-    } catch (error) {
-      console.error('Endorsement verification failed:', error)
-      return false
-    }
-  }
-
-  // Store endorsement locally
-  async storeEndorsement(endorsement) {
-    const endorsements = await this.storage.retrieve('endorsements', [])
-    endorsements.push(endorsement)
-
-    // Keep only recent endorsements (last 100)
-    if (endorsements.length > 100) {
-      endorsements.splice(0, endorsements.length - 100)
-    }
-
-    await this.storage.store('endorsements', endorsements)
-  }
-
-  // Get endorsements for a user
-  async getEndorsements(userId = null) {
-    const endorsements = await this.storage.retrieve('endorsements', [])
-    
-    if (!userId) {
-      return endorsements
-    }
-
-    return endorsements.filter(e => e.endorseeId === userId || e.endorserId === userId)
-  }
-
-  // Calculate trust score for a user
-  async calculateTrustScore(userId) {
-    try {
-      const endorsements = await this.getEndorsements(userId)
-      const receivedEndorsements = endorsements.filter(e => e.endorseeId === userId)
-
-      if (receivedEndorsements.length === 0) {
-        return {
-          score: 0,
-          level: 'UNKNOWN',
-          endorsementCount: 0,
-          lastUpdated: new Date().toISOString()
-        }
-      }
-
-      // Calculate weighted average
-      let totalWeight = 0
-      let weightedSum = 0
-
-      for (const endorsement of receivedEndorsements) {
-        // Check if endorsement is still valid
-        if (this.isEndorsementValid(endorsement)) {
-          const weight = this.calculateEndorsementWeight(endorsement)
-          totalWeight += weight
-          weightedSum += endorsement.trustScore * weight
-        }
-      }
-
-      const averageScore = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0
-      const trustLevel = this.getTrustLevel(averageScore)
-
-      return {
-        score: averageScore,
-        level: trustLevel,
-        endorsementCount: receivedEndorsements.length,
-        lastUpdated: new Date().toISOString()
-      }
-    } catch (error) {
-      console.error('Trust score calculation failed:', error)
-      return {
-        score: 0,
-        level: 'UNKNOWN',
-        endorsementCount: 0,
-        lastUpdated: new Date().toISOString(),
-        error: error.message
-      }
-    }
-  }
-
-  // Check if endorsement is still valid
-  isEndorsementValid(endorsement) {
-    // Check expiration
-    if (endorsement.expires && new Date(endorsement.expires) < new Date()) {
-      return false
-    }
-
-    // Check age (endorsements older than 1 year are less reliable)
-    const age = Date.now() - new Date(endorsement.timestamp).getTime()
-    const oneYear = 365 * 24 * 60 * 60 * 1000
-    
-    return age < oneYear
-  }
-
-  // Calculate weight of an endorsement
-  calculateEndorsementWeight(endorsement) {
-    let weight = 1.0
-
-    // Recent endorsements have more weight
-    const age = Date.now() - new Date(endorsement.timestamp).getTime()
-    const sixMonths = 180 * 24 * 60 * 60 * 1000
-    
-    if (age < sixMonths) {
-      weight *= 1.2 // 20% boost for recent endorsements
-    }
-
-    // Length and detail of message affects weight
-    if (endorsement.message && endorsement.message.length > 50) {
-      weight *= 1.1 // 10% boost for detailed endorsements
-    }
-
-    return weight
-  }
-
-  // Get trust level from score
-  getTrustLevel(score) {
-    if (score >= TRUST_LEVELS.MAXIMUM) return 'MAXIMUM'
-    if (score >= TRUST_LEVELS.VERIFIED) return 'VERIFIED'
-    if (score >= TRUST_LEVELS.HIGH) return 'HIGH'
-    if (score >= TRUST_LEVELS.MEDIUM) return 'MEDIUM'
-    if (score >= TRUST_LEVELS.LOW) return 'LOW'
-    return 'UNKNOWN'
-  }
-
-  // Request endorsement from another user
-  async requestEndorsement(targetUserId, message = '') {
-    if (!this.initialized) await this.initialize()
-
-    try {
-      const request = {
-        id: this.crypto.generateUUID(),
-        requesterId: await this.getCurrentUserId(),
-        targetUserId,
-        message,
-        timestamp: new Date().toISOString(),
-        status: 'pending'
-      }
-
-      // Store request locally
-      const requests = await this.storage.retrieve('endorsement_requests', [])
-      requests.push(request)
-      await this.storage.store('endorsement_requests', requests)
-
-      return request
-    } catch (error) {
-      throw new Error(`Failed to request endorsement: ${error.message}`)
-    }
-  }
-
-  // Get endorsement requests
-  async getEndorsementRequests() {
-    return await this.storage.retrieve('endorsement_requests', [])
-  }
-
-  // Verify user identity (for Ultra mode)
-  async verifyUserIdentity(userId, verificationMethod, proof) {
-    try {
-      const verification = {
-        id: this.crypto.generateUUID(),
-        userId,
-        method: verificationMethod,
-        proof,
-        timestamp: new Date().toISOString(),
-        verified: false,
-        verifiedBy: 'system'
-      }
-
-      // Simulate verification process
-      switch (verificationMethod) {
-        case 'tweet':
-          verification.verified = await this.verifyTwitterPost(proof)
-          break
-        case 'repo':
-          verification.verified = await this.verifyGitHubRepo(proof)
-          break
-        case 'signature':
-          verification.verified = await this.verifyDigitalSignature(proof)
-          break
+      let currentScore = this.trustScores.get(userId) || 0;
+      
+      // Simple trust scoring algorithm
+      switch (trustLevel) {
+        case 'high':
+          currentScore += 10;
+          break;
+        case 'medium':
+          currentScore += 5;
+          break;
+        case 'low':
+          currentScore += 1;
+          break;
         default:
-          verification.verified = false
+          break;
       }
-
-      // Store verification result
-      const verifications = await this.storage.retrieve('verifications', [])
-      verifications.push(verification)
-      await this.storage.store('verifications', verifications)
-
-      return verification
+      
+      this.trustScores.set(userId, currentScore);
+      LocalStorage.setItem('trustScores', Object.fromEntries(this.trustScores));
+      
+      return currentScore;
     } catch (error) {
-      throw new Error(`Verification failed: ${error.message}`)
+      console.error('TrustManager: Error updating trust score:', error);
     }
   }
 
-  // Simulate Twitter verification
-  async verifyTwitterPost(proof) {
-    // In a real implementation, this would check Twitter API
-    return proof && proof.includes('ultrachat') && proof.includes('verification')
+  getTrustScore(userId) {
+    return this.trustScores.get(userId) || 0;
   }
 
-  // Simulate GitHub verification
-  async verifyGitHubRepo(proof) {
-    // In a real implementation, this would check GitHub API
-    return proof && proof.includes('github.com') && proof.includes('ultrachat')
+  getEndorsement(userId) {
+    return this.endorsements.get(userId);
   }
 
-  // Verify digital signature
-  async verifyDigitalSignature(proof) {
-    try {
-      return await this.crypto.verify(proof.message, proof.signature, proof.publicKey)
-    } catch (error) {
-      return false
+  getAllEndorsements() {
+    return Array.from(this.endorsements.values());
+  }
+
+  async verifyEndorsement(endorsement) {
+    if (!this.publicKey) {
+      throw new Error('Public key not available');
     }
-  }
-
-  // Get current user ID
-  async getCurrentUserId() {
-    const userData = await this.storage.retrieve('user_data_local', {})
-    return userData.userId || 'anonymous'
-  }
-
-  // Get trust network for a user
-  async getTrustNetwork(userId) {
-    const endorsements = await this.getEndorsements(userId)
     
-    const network = {
-      userId,
-      endorsers: [],
-      endorsed: [],
-      mutualConnections: []
-    }
-
-    // Build network graph
-    endorsements.forEach(endorsement => {
-      if (endorsement.endorseeId === userId) {
-        network.endorsers.push({
-          userId: endorsement.endorserId,
-          trustScore: endorsement.trustScore,
-          timestamp: endorsement.timestamp
-        })
-      } else if (endorsement.endorserId === userId) {
-        network.endorsed.push({
-          userId: endorsement.endorseeId,
-          trustScore: endorsement.trustScore,
-          timestamp: endorsement.timestamp
-        })
-      }
-    })
-
-    // Find mutual connections
-    const endorserIds = network.endorsers.map(e => e.userId)
-    const endorsedIds = network.endorsed.map(e => e.userId)
-    network.mutualConnections = endorserIds.filter(id => endorsedIds.includes(id))
-
-    return network
-  }
-
-  // Export trust data (for backup)
-  async exportTrustData() {
-    return {
-      endorsements: await this.storage.retrieve('endorsements', []),
-      requests: await this.storage.retrieve('endorsement_requests', []),
-      verifications: await this.storage.retrieve('verifications', []),
-      exportedAt: new Date().toISOString(),
-      version: '1.0'
-    }
-  }
-
-  // Import trust data (from backup)
-  async importTrustData(trustData) {
     try {
-      if (trustData.endorsements) {
-        await this.storage.store('endorsements', trustData.endorsements)
-      }
-      if (trustData.requests) {
-        await this.storage.store('endorsement_requests', trustData.requests)
-      }
-      if (trustData.verifications) {
-        await this.storage.store('verifications', trustData.verifications)
-      }
-      return true
+      const { signature, ...endorsementData } = endorsement;
+      const encoder = new TextEncoder();
+      const data = encoder.encode(JSON.stringify(endorsementData));
+      
+      const isValid = await crypto.subtle.verify(
+        { name: 'ECDSA', hash: { name: 'SHA-256' } },
+        this.publicKey,
+        new Uint8Array(signature),
+        data
+      );
+      
+      return isValid;
     } catch (error) {
-      throw new Error(`Trust data import failed: ${error.message}`)
-    }
-  }
-
-  // Clean up old data
-  async cleanupOldData() {
-    try {
-      const cutoffDate = new Date()
-      cutoffDate.setFullYear(cutoffDate.getFullYear() - 2) // 2 years
-
-      // Clean endorsements
-      const endorsements = await this.storage.retrieve('endorsements', [])
-      const validEndorsements = endorsements.filter(e => 
-        new Date(e.timestamp) > cutoffDate
-      )
-      await this.storage.store('endorsements', validEndorsements)
-
-      // Clean requests
-      const requests = await this.storage.retrieve('endorsement_requests', [])
-      const validRequests = requests.filter(r => 
-        new Date(r.timestamp) > cutoffDate
-      )
-      await this.storage.store('endorsement_requests', validRequests)
-
-      return {
-        endorsementsRemoved: endorsements.length - validEndorsements.length,
-        requestsRemoved: requests.length - validRequests.length
-      }
-    } catch (error) {
-      throw new Error(`Cleanup failed: ${error.message}`)
+      console.error('TrustManager: Error verifying endorsement:', error);
+      return false;
     }
   }
 }
 
-export default TrustManager
+// Export singleton instance
+export default new TrustManager();

@@ -1,17 +1,14 @@
 /*
- * Message Management Service - UltraChat v1.2.3 Alpha
+ * Message Management Service - UltraChat v1.2.3.4 Final
  * 
- * Manages controlled message operations:
- * - Deletion requests with moderator approval
- * - Message editing with approval workflow
- * - Message archival and recovery
- * - Permission-based operations using Web of Trust
+ * Handles message operations with secure encryption and local storage
  * 
- * Privacy-First: All operations logged in audit trail
+ * Privacy-First: All messages encrypted and stored locally
+ * Zero-Tracking: No analytics or external data transmission
  */
 
 import LocalStorage from '../../utils/LocalStorage'
-import Constants from '../../utils/Constants'
+import * as Constants from '../../utils/Constants';
 
 class MessageManagement {
   constructor(auditManager, trustManager) {

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<!-- UltraLive Enhanced Demo HTML -->
+<!-- 🚀 UltraChat v1.2.3.4 Final - PRIVACY FIRST -->
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UltraLive Enhanced Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+        
+        .controls {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00a6cc;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            background: #2d2d2d;
+            color: white;
+            border: 1px solid #0088cc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        button {
+            background: #0088cc;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background: #00a6cc;
+        }
+        
+        .instructions {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        
+        .instructions h3 {
+            color: #00ff88;
+            margin-top: 0;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 UltraLive Enhanced Demo</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="userId">User:</label>
+                <select id="userId">
+                    <option value="1">UltraKing (Ultra Elite)</option>
+                    <option value="2">AnonGhost (Anon)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="message">Message:</label>
+                <input type="text" id="message" placeholder="Enter your message here...">
+            </div>
+            
+            <button id="sendMessage">Send Message</button>
+        </div>
+        
+        <div id="liveContainer">
+            <!-- Live overlays will be inserted here by JavaScript -->
+        </div>
+        
+        <div class="instructions">
+            <h3>UltraLive Enhanced Features:</h3>
+            <ul>
+                <li><strong>Multi-user Voice Queue:</strong> Messages are spoken sequentially with no overlap</li>
+                <li><strong>Text Transformations:</strong> Mirror, upside-down, and uppercase effects</li>
+                <li><strong>Live Orb Animation:</strong> Visual indicator shows who's speaking</li>
+                <li><strong>Account Type Voices:</strong> Each account type has unique pitch and rate</li>
+                <li><strong>Dynamic Overlays:</strong> Real-time display of messages with visual effects</li>
+            </ul>
+            <p>Try sending messages from different users to see the voice queue in action!</p>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the UltraLive Enhanced module
+        import UltraLive from './UltraLiveEnhanced.js';
+        
+        // Sample user data
+        const users = [
+            { 
+                id: 1, 
+                handle: "UltraKing", 
+                screenName: "Ultra", 
+                accountType: "Ultra Elite", 
+                textPrefs: { uppercase: true, mirror: true, upsideDown: false } 
+            },
+            { 
+                id: 2, 
+                handle: "AnonGhost", 
+                screenName: "Ghost", 
+                accountType: "Anon", 
+                textPrefs: { mirror: true, uppercase: false, upsideDown: false } 
+            }
+        ];
+        
+        // Initialize the demo when the page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Inject styles
+                UltraLive.injectUltraLiveStyles();
+                
+                // Initialize UltraLive session
+                const ultraLive = UltraLive.initUltraLiveSession(users, "liveContainer");
+                
+                // Set up message sending
+                document.getElementById("sendMessage").addEventListener("click", function() {
+                    const userId = parseInt(document.getElementById("userId").value);
+                    const message = document.getElementById("message").value;
+                    
+                    if (message.trim()) {
+                        ultraLive.addMessage(userId, message);
+                        document.getElementById("message").value = "";
+                    }
+                });
+                
+                // Allow Enter key to send message
+                document.getElementById("message").addEventListener("keypress", function(e) {
+                    if (e.key === "Enter") {
+                        document.getElementById("sendMessage").click();
+                    }
+                });
+                
+                // Add some sample messages to demonstrate
+                setTimeout(() => {
+                    ultraLive.addMessage(1, "Welcome to UltraLive Enhanced!");
+                }, 1000);
+                
+                setTimeout(() => {
+                    ultraLive.addMessage(2, "Chill mode activated, let's go!");
+                }, 3000);
+                
+                setTimeout(() => {
+                    ultraLive.addMessage(1, "This is Ultra Elite speaking!");
+                }, 5000);
+                
+                console.log('✅ UltraLive Enhanced Demo initialized');
+            } catch (error) {
+                console.error('❌ Demo initialization failed:', error);
+            }
+        });
+    </script>
+</body>
+</html>

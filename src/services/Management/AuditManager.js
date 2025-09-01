@@ -1,19 +1,15 @@
 /*
- * Audit Manager - UltraChat v1.2.3 Alpha
+ * Audit Manager - UltraChat v1.2.3.4 Final
  * 
- * Manages secure audit trails for:
- * - Message deletions and edits
- * - File deletions and modifications
- * - Crypto tipping transactions
- * - Trust level changes and moderation actions
- * - Permission changes and administrative actions
+ * Manages audit logging and data recovery functionality
  * 
- * Privacy-First: All audit logs stored locally with encryption
+ * Privacy-First: All audit data encrypted and stored locally
+ * Zero-Tracking: No analytics or external data transmission
  */
 
 import LocalStorage from '../../utils/LocalStorage'
 import CryptoUtils from '../../utils/CryptoUtils'
-import Constants from '../../utils/Constants'
+import * as Constants from '../../utils/Constants';
 
 class AuditManager {
   constructor() {

@@ -1,0 +1,19 @@
+{
+  "id": "msg_1756682534694_70f5f9117ca2bf16",
+  "senderId": "testUser1",
+  "recipientId": "testUser2",
+  "content": {
+    "encryptedContent": "3681b25758090a7a07a964523d73f6a1b369d7edf6f9872036991d800977",
+    "encryptedKey": "ocpm2HLCcWXo+1Y/0hlzGt0A0vojJz+ePpiJ/5oIQ8XHIAYGNjv5xarcunor0TXsTkzTfrzlw3og/cTjkfdVuqDDd53o/HUS7uaoYzlYYfIr53qePG5HuTTHNdRmfstK1S4QfReJ4fGU5G7haudleQP/xJ7wRlPmT8KPi5o+BWC7Lop5pmbuvG1QbwDaXD7WdPIVozHS7YYIyGE4+d6Apt6kI76+Iawyc8jjY4wp6YCdJAG0JbU6OxobX/0dbVnm4kTKaFs3kvDfcpVOLC9H+dCR1bspKsjRFZSE4tmyXyOa/oHqlyzYGKf4j86nU1eEYPJZTAZ7H92AgKzFEVQnkg==",
+    "iv": "86a9dfafd8bc917a811caa5d5e4737c1",
+    "authTag": "604a9ac992bae0ccfa98b8edf46e53c4",
+    "algorithm": "aes-256-gcm",
+    "keyAlgorithm": "rsa-oaep"
+  },
+  "timestamp": "2025-08-31T23:22:14.695Z",
+  "threadId": "thread_testUser1_testUser2",
+  "type": "text",
+  "status": "sent",
+  "storedAt": "2025-08-31T23:22:14.699Z",
+  "deviceId": "device_dfa5f10ee307ec192f40771f57ea2247"
+}

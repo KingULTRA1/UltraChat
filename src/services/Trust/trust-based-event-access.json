@@ -1,0 +1,298 @@
+{
+  "version": "1.0",
+  "systemName": "UltraChat Trust-Based Event Access",
+  "description": "Privacy-first event access system driven by Web of Trust connections",
+  "accountTypes": {
+    "Pro": {
+      "name": "Pro",
+      "type": "Standard",
+      "description": "Baseline account, default for all users",
+      "accessLevel": 1,
+      "permissions": {
+        "publicEvents": true,
+        "privateEvents": false,
+        "eliteEvents": false,
+        "hosting": false,
+        "moderation": false
+      },
+      "limits": {
+        "eventLimit": 5,
+        "maxParticipants": 10
+      },
+      "features": [
+        "Basic messaging",
+        "Local storage",
+        "Public events (when invited)"
+      ]
+    },
+    "Legacy": {
+      "name": "Legacy",
+      "type": "Historic",
+      "description": "Original users, marked for recognition",
+      "accessLevel": 1,
+      "permissions": {
+        "publicEvents": true,
+        "privateEvents": false,
+        "eliteEvents": false,
+        "hosting": false,
+        "moderation": false
+      },
+      "limits": {
+        "eventLimit": 5,
+        "maxParticipants": 10
+      },
+      "features": [
+        "Recognition badge",
+        "Priority support",
+        "Public events (when invited)"
+      ],
+      "specialTag": true
+    },
+    "OG": {
+      "name": "OG",
+      "type": "Historic",
+      "description": "Founder-level early adopter",
+      "accessLevel": 1,
+      "permissions": {
+        "publicEvents": true,
+        "privateEvents": false,
+        "eliteEvents": false,
+        "hosting": false,
+        "moderation": false
+      },
+      "limits": {
+        "eventLimit": 5,
+        "maxParticipants": 10
+      },
+      "features": [
+        "Founder badge",
+        "Special recognition",
+        "Public events (when invited)"
+      ],
+      "specialTag": true
+    },
+    "Ultra": {
+      "name": "Ultra",
+      "type": "Premium",
+      "description": "Enhanced access to private events, perks, or exclusive content",
+      "accessLevel": 2,
+      "permissions": {
+        "publicEvents": true,
+        "privateEvents": true,
+        "eliteEvents": false,
+        "hosting": true,
+        "moderation": false
+      },
+      "limits": {
+        "eventLimit": 15,
+        "maxParticipants": 25
+      },
+      "features": [
+        "Private events",
+        "Event hosting",
+        "Enhanced privacy",
+        "Web of Trust integration"
+      ]
+    },
+    "UltraElite": {
+      "name": "Ultra Elite",
+      "type": "Premium",
+      "description": "Access to higher-tier events, invitations, and exclusive tools",
+      "accessLevel": 3,
+      "permissions": {
+        "publicEvents": true,
+        "privateEvents": true,
+        "eliteEvents": true,
+        "hosting": true,
+        "moderation": false
+      },
+      "limits": {
+        "eventLimit": 30,
+        "maxParticipants": 50
+      },
+      "features": [
+        "Elite events access",
+        "Exclusive tools",
+        "Priority event access",
+        "Advanced privacy controls"
+      ]
+    },
+    "Super": {
+      "name": "Super",
+      "type": "Premium",
+      "description": "Intermediate premium tier for curated experiences or limited-event access",
+      "accessLevel": 4,
+      "permissions": {
+        "publicEvents": true,
+        "privateEvents": true,
+        "eliteEvents": true,
+        "hosting": true,
+        "moderation": false
+      },
+      "limits": {
+        "eventLimit": 25,
+        "maxParticipants": 40
+      },
+      "features": [
+        "Curated experiences",
+        "Limited event access",
+        "Enhanced networking",
+        "Premium support"
+      ]
+    },
+    "Royal": {
+      "name": "Royal",
+      "type": "Exclusive",
+      "description": "Full access to elite events, gatherings, and Web of Trust networking",
+      "accessLevel": 5,
+      "permissions": {
+        "publicEvents": true,
+        "privateEvents": true,
+        "eliteEvents": true,
+        "hosting": true,
+        "moderation": true
+      },
+      "limits": {
+        "eventLimit": 50,
+        "maxParticipants": 100
+      },
+      "features": [
+        "Full elite access",
+        "Moderation privileges",
+        "VIP support",
+        "Exclusive networking"
+      ]
+    },
+    "Scholar": {
+      "name": "Scholar",
+      "type": "Exclusive",
+      "description": "Access for verified experts, educators, or contributors",
+      "accessLevel": 5,
+      "permissions": {
+        "publicEvents": true,
+        "privateEvents": true,
+        "eliteEvents": true,
+        "hosting": true,
+        "moderation": true
+      },
+      "limits": {
+        "eventLimit": 50,
+        "maxParticipants": 100
+      },
+      "features": [
+        "Expert verification",
+        "Educational events",
+        "Content creation tools",
+        "Community leadership"
+      ]
+    },
+    "Anon": {
+      "name": "Anon",
+      "type": "Privacy-Focused",
+      "description": "Minimal traceable data, can receive invites only through Web of Trust or encrypted tokens",
+      "accessLevel": 0,
+      "permissions": {
+        "publicEvents": false,
+        "privateEvents": false,
+        "eliteEvents": false,
+        "hosting": false,
+        "moderation": false
+      },
+      "limits": {
+        "eventLimit": 0,
+        "maxParticipants": 0
+      },
+      "features": [
+        "Complete anonymity",
+        "No data retention",
+        "Session-based identity",
+        "Encrypted invitations only"
+      ],
+      "privacyFocused": true
+    }
+  },
+  "accessHierarchy": [
+    "Pro",
+    "Ultra",
+    "UltraElite",
+    "Super",
+    "Royal",
+    "Scholar"
+  ],
+  "eventTypes": {
+    "public": {
+      "name": "Public Event",
+      "description": "Open to all users with publicEvents permission",
+      "privacyLevel": "low",
+      "invitationRequired": false,
+      "accessRules": [
+        "Available to account types with publicEvents permission",
+        "No Web of Trust requirement",
+        "Visible in public event directory"
+      ]
+    },
+    "private": {
+      "name": "Private Event",
+      "description": "Requires invitation through Web of Trust",
+      "privacyLevel": "medium",
+      "invitationRequired": true,
+      "accessRules": [
+        "Only accessible through Web of Trust invitation",
+        "Host can invite anyone in their network",
+        "Participants can invite their connections"
+      ]
+    },
+    "elite": {
+      "name": "Elite Event",
+      "description": "Exclusive events for higher-tier accounts",
+      "privacyLevel": "high",
+      "invitationRequired": true,
+      "accessRules": [
+        "Requires eliteEvents permission",
+        "Web of Trust invitation required",
+        "Limited to Royal, Scholar, and Ultra Elite accounts"
+      ]
+    },
+    "invite_only": {
+      "name": "Invite Only",
+      "description": "Highly exclusive events with strict access control",
+      "privacyLevel": "maximum",
+      "invitationRequired": true,
+      "accessRules": [
+        "Only through explicit invitation",
+        "Host has complete control over participants",
+        "No automatic access based on account type"
+      ]
+    }
+  },
+  "webOfTrustRules": {
+    "endorsementRequirement": {
+      "minimumTrustScore": 30,
+      "requiredEndorsements": 2,
+      "mutualConnectionBonus": 10
+    },
+    "invitationRules": {
+      "directEndorsers": "Can invite anyone they've endorsed",
+      "endorsedBy": "Can be invited by those who endorsed them",
+      "mutualConnections": "Can invite through mutual connections",
+      "trustPropagation": "Trust flows through connections with diminishing strength"
+    },
+    "privacyProtection": {
+      "noTraceableLogs": "Event access checks leave no traceable data",
+      "encryptedStorage": "All event data stored with encryption",
+      "localProcessing": "No external servers involved in access decisions",
+      "anonymousAccess": "Anon accounts can only access explicitly invited events"
+    }
+  },
+  "integrationPoints": {
+    "profileManager": "src/services/Profiles/ProfileManager.js",
+    "trustManager": "src/services/Trust/TrustManager.js",
+    "eventSystem": "src/services/Trust/EventAccessSystem.js"
+  },
+  "implementationNotes": {
+    "plugAndPlay": "This configuration can be directly integrated into the UltraChat platform",
+    "privacyFirst": "All event access is determined locally without external tracking",
+    "autonomousOperation": "System operates independently once configured",
+    "webOfTrustDriven": "Event invitations are based on trust connections, not account types alone"
+  }
+}

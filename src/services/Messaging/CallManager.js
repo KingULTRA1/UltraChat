@@ -15,6 +15,10 @@ class CallManager {
     this.remoteStream = null
     this.peerConnection = null
     
+    // SMS and phone integration
+    this.smsSupported = 'sms' in navigator || typeof window !== 'undefined'
+    this.phoneSupported = typeof window !== 'undefined' && navigator.mediaDevices
+    
     // Event handlers
     this.onCallStateChange = null
     this.onRemoteStream = null
@@ -47,6 +51,90 @@ class CallManager {
       console.error('Failed to initialize CallManager:', error)
       return false
     }
+  }
+
+  // Check if SMS is supported
+  isSMSSupported() {
+    return this.smsSupported
+  }
+
+  // Check if phone calls are supported
+  isPhoneSupported() {
+    return this.phoneSupported
+  }
+
+  // Send SMS message
+  async sendSMS(phoneNumber, message) {
+    try {
+      // Validate phone number
+      if (!this.isValidPhoneNumber(phoneNumber)) {
+        throw new Error('Invalid phone number format')
+      }
+
+      // In a real implementation, you would use a native API or service
+      // For now, we'll simulate the SMS sending
+      console.log(`📱 Sending SMS to ${phoneNumber}: ${message}`)
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
+      
+      // Simulate success/failure
+      const success = Math.random() > 0.1 // 90% success rate
+      
+      if (success) {
+        return {
+          success: true,
+          messageId: `sms_${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          cost: 0.01 // Simulated cost
+        }
+      } else {
+        throw new Error('SMS delivery failed')
+      }
+    } catch (error) {
+      console.error('❌ SMS sending failed:', error)
+      throw error
+    }
+  }
+
+  // Make phone call
+  async makePhoneCall(phoneNumber) {
+    try {
+      // Validate phone number
+      if (!this.isValidPhoneNumber(phoneNumber)) {
+        throw new Error('Invalid phone number format')
+      }
+
+      // In a real implementation, you would use a native API or service
+      // For now, we'll simulate the phone call
+      console.log(`📞 Making phone call to ${phoneNumber}`)
+      
+      // Simulate connection delay
+      await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000))
+      
+      // Simulate success/failure
+      const success = Math.random() > 0.05 // 95% success rate
+      
+      if (success) {
+        return {
+          success: true,
+          callId: `call_${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          duration: 0 // Will be updated when call ends
+        }
+      } else {
+        throw new Error('Phone call failed')
+      }
+    } catch (error) {
+      console.error('❌ Phone call failed:', error)
+      throw error
+    }
+  }
+
+  // Validate phone number format
+  isValidPhoneNumber(phoneNumber) {
+    // Basic validation for international format
+    return /^\+?[1-9]\d{10,14}$/.test(phoneNumber.replace(/\s/g, ''))
   }
 
   // Start an outgoing call

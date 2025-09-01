@@ -13,6 +13,9 @@ class CrossServiceMessaging {
       CROSS_SERVICE_TYPES.PHONE_SMS,
       CROSS_SERVICE_TYPES.EMAIL
     ]
+    // Add unified messaging queue
+    this.messageQueue = []
+    this.isSending = false
   }
 
   // Initialize cross-service messaging
@@ -24,6 +27,52 @@ class CrossServiceMessaging {
     } catch (error) {
       console.error('Cross-service messaging initialization failed:', error)
       return false
+    }
+  }
+
+  // Send message through all supported services simultaneously
+  async sendUnifiedMessage(recipient, message, options = {}) {
+    if (!this.initialized) await this.initialize()
+
+    try {
+      // Create message object for all services
+      const unifiedMessage = {
+        id: this.generateMessageId(),
+        recipient,
+        content: message.content,
+        type: message.type || MESSAGE_TYPES.TEXT,
+        timestamp: new Date().toISOString(),
+        status: 'sending',
+        deliveryData: {}
+      }
+
+      // Send to all supported services simultaneously
+      const sendPromises = this.supportedServices.map(serviceType => 
+        this.sendCrossServiceMessage(serviceType, recipient, message, options)
+      )
+
+      // Wait for all messages to be sent
+      const results = await Promise.allSettled(sendPromises)
+      
+      // Process results
+      results.forEach((result, index) => {
+        const serviceType = this.supportedServices[index]
+        if (result.status === 'fulfilled') {
+          unifiedMessage.deliveryData[serviceType] = result.value
+        } else {
+          unifiedMessage.deliveryData[serviceType] = {
+            success: false,
+            error: result.reason.message
+          }
+        }
+      })
+
+      // Store in local history
+      await this.storeCrossServiceMessage(unifiedMessage)
+
+      return unifiedMessage
+    } catch (error) {
+      throw new Error(`Unified message sending failed: ${error.message}`)
     }
   }
 

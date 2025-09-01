@@ -1,23 +1,19 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import QRScanner from './QRScanner'
 import './AuthScreen.css'
+import ultraGenerator from '../../services/Communication/UltraGenerator.js'
 
-// 🚀 UltraChat v1.2.3 Alpha - PRIVACY FIRST
+// 🚀 UltraChat v1.2.3.4 Final - PRIVACY FIRST
 
 const AuthScreen = ({ onLogin }) => {
   const [authMethod, setAuthMethod] = useState('handle')
   const [showQRScanner, setShowQRScanner] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
-  const [botBridgeStatus, setBotBridgeStatus] = useState({
-    discord: false,
-    telegram: false,
-    twitter: false,
-    signal: false
-  })
+  const [deviceStatus, setDeviceStatus] = useState('checking')
   const [formData, setFormData] = useState({
     handle: '',
     name: '',
-    profileMode: 'Basic',
+    accountType: 'Basic',
     enableCrypto: false,
     acceptedTerms: false
   })
@@ -38,79 +34,30 @@ const AuthScreen = ({ onLogin }) => {
       status: 'available'
     },
     {
-      id: 'discord',
-      name: 'Discord',
-      icon: '🎮',
-      description: 'Connect via Discord bot',
-      status: botBridgeStatus.discord ? 'connected' : 'available'
-    },
-    {
-      id: 'telegram',
-      name: 'Telegram',
-      icon: '✈️',
-      description: 'Connect via Telegram bot',
-      status: botBridgeStatus.telegram ? 'connected' : 'available'
-    },
-    {
-      id: 'twitter',
-      name: 'Twitter/X',
-      icon: '🐦',
-      description: 'Connect via Twitter/X',
-      status: botBridgeStatus.twitter ? 'connected' : 'available'
-    },
-    {
-      id: 'signal',
-      name: 'Signal',
-      icon: '🔒',
-      description: 'Connect via Signal bridge',
-      status: botBridgeStatus.signal ? 'connected' : 'available'
+      id: 'device',
+      name: 'Device Identity',
+      icon: '🔐',
+      description: 'Use device-based authentication',
+      status: deviceStatus
     }
   ]
 
-  // Check bot bridge status on component mount
+  // Check device status on component mount
   useEffect(() => {
-    checkBotBridgeStatus()
-    const interval = setInterval(checkBotBridgeStatus, 10000) // Check every 10 seconds
-    return () => clearInterval(interval)
+    checkDeviceStatus()
   }, [])
 
-  const checkBotBridgeStatus = async () => {
+  const checkDeviceStatus = async () => {
     try {
       const response = await fetch('http://localhost:3001/health').catch(() => null)
       if (response && response.ok) {
-        try {
-          const status = await response.json()
-          setBotBridgeStatus({
-            discord: status.platforms?.discord || false,
-            telegram: status.platforms?.telegram || false,
-            twitter: status.platforms?.twitter || false,
-            signal: status.platforms?.signal || false
-          })
-        } catch (jsonError) {
-          // If response is not JSON (like HTML error page), bot bridge is not running
-          setBotBridgeStatus({
-            discord: false,
-            telegram: false,
-            twitter: false,
-            signal: false
-          })
-        }
+        const status = await response.json()
+        setDeviceStatus(status.services.identity ? 'connected' : 'available')
       } else {
-        setBotBridgeStatus({
-          discord: false,
-          telegram: false,
-          twitter: false,
-          signal: false
-        })
+        setDeviceStatus('disconnected')
       }
     } catch (error) {
-      // Bot bridge is not running or not accessible
-      setBotBridgeStatus({
-        discord: false,
-        telegram: false,
-        twitter: false,
-        signal: false
-      })
+      setDeviceStatus('disconnected')
     }
   }
 
@@ -126,8 +73,8 @@ const AuthScreen = ({ onLogin }) => {
     if (authMethod === 'qr') {
       setShowQRScanner(true)
     } else if (formData.handle.trim()) {
-      // Show onboarding for new users
-      if (authMethod === 'handle' && formData.profileMode === 'Ultra') {
+      // Show onboarding for new users with advanced account types
+      if (authMethod === 'handle' && (formData.accountType === 'Ultra' || formData.accountType === 'Ultra Elite')) {
         setShowOnboarding(true)
       } else {
         completeLogin()
@@ -142,7 +89,8 @@ const AuthScreen = ({ onLogin }) => {
         ...formData,
         cryptoEnabled: formData.enableCrypto,
         onboardingCompleted: true,
-        trustLevel: formData.profileMode === 'Ultra' ? 'medium' : 'low'
+        trustLevel: formData.accountType === 'Ultra' || formData.accountType === 'Ultra Elite' || formData.accountType === 'Legacy' ? 'high' : 
+                   formData.accountType === 'Pro' || formData.accountType === 'Anon Pro' ? 'medium' : 'low'
       }
     })
   }
@@ -155,12 +103,13 @@ const AuthScreen = ({ onLogin }) => {
           method: 'qr',
           userData: {
             userId: parsedData.userId,
-            profileMode: parsedData.profileMode || 'Ultra',
+            accountType: parsedData.accountType || 'Ultra',
             name: 'QR User',
             handle: parsedData.userId,
             imported: true,
             cryptoEnabled: parsedData.cryptoEnabled || false,
-            trustLevel: parsedData.trustLevel || 'medium'
+            trustLevel: parsedData.accountType === 'Ultra' || parsedData.accountType === 'Ultra Elite' || parsedData.accountType === 'Legacy' ? 'high' : 
+                       parsedData.accountType === 'Pro' || parsedData.accountType === 'Anon Pro' ? 'medium' : 'low'
           }
         })
         setShowQRScanner(false)
@@ -178,6 +127,28 @@ const AuthScreen = ({ onLogin }) => {
     alert('QR Scanner error: ' + error)
   }
 
+  // Generate a nickname suggestion using UltraGenerator
+  const generateNicknameSuggestion = () => {
+    try {
+      // Check if ultraGenerator is available and has the method
+      if (ultraGenerator && typeof ultraGenerator.generateAuthNickname === 'function') {
+        const suggestion = ultraGenerator.generateAuthNickname();
+        setFormData({...formData, handle: suggestion});
+      } else {
+        // Fallback if UltraGenerator is not working
+        const fallbackHandles = ['User' + Math.floor(Math.random() * 1000), 'UltraUser', 'ChatUser'];
+        const suggestion = fallbackHandles[Math.floor(Math.random() * fallbackHandles.length)];
+        setFormData({...formData, handle: suggestion});
+      }
+    } catch (error) {
+      console.error('Error generating nickname:', error);
+      // Fallback if there's an error
+      const fallbackHandles = ['User' + Math.floor(Math.random() * 1000), 'UltraUser', 'ChatUser'];
+      const suggestion = fallbackHandles[Math.floor(Math.random() * fallbackHandles.length)];
+      setFormData({...formData, handle: suggestion});
+    }
+  }
+
   return (
     <div className="auth-screen">
       <div className="auth-container">
@@ -185,23 +156,17 @@ const AuthScreen = ({ onLogin }) => {
           <div className="logo">
             <span className="logo-icon">🛡️</span>
             <h1>UltraChat</h1>
-            <span className="version">v1.2.3 Alpha</span>
+            <span className="version">v1.2.3.4 Final</span>
             <span className="ultra-badge">PRIVACY FIRST</span>
           </div>
-          <p className="tagline">Privacy First • E2E Encrypted • Zero Tracking • Crypto Tipping • Bot Bridge</p>
+          <p className="tagline">One Seamless Unified Communication Platform - Voice, Video, Text, Events</p>
           
-          {/* Bot Bridge Status Indicator */}
+          {/* Device Status Indicator */}
           <div className="bridge-status">
-            <span className="status-label">Bot Bridges:</span>
-            {Object.entries(botBridgeStatus).map(([platform, connected]) => (
-              <span 
-                key={platform} 
-                className={`bridge-indicator ${connected ? 'connected' : 'disconnected'}`}
-                title={`${platform}: ${connected ? 'Connected' : 'Disconnected'}`}
-              >
-                {authMethods.find(m => m.id === platform)?.icon}
-              </span>
-            ))}
+            <span className="status-label">Device Identity:</span>
+            <span className={`bridge-indicator ${deviceStatus === 'connected' ? 'connected' : 'disconnected'}`}>
+              {deviceStatus === 'connected' ? '✅ Active' : deviceStatus === 'checking' ? '🔍 Checking...' : '❌ Inactive'}
+            </span>
           </div>
         </div>
 
@@ -220,7 +185,7 @@ const AuthScreen = ({ onLogin }) => {
                   <span className="method-name">{method.name}</span>
                   <span className="method-desc">{method.description}</span>
                   {method.status === 'connected' && (
-                    <span className="method-status">✅ Bridge Active</span>
+                    <span className="method-status">✅ Device Ready</span>
                   )}
                 </div>
               </button>
@@ -232,13 +197,23 @@ const AuthScreen = ({ onLogin }) => {
               <>
                 <div className="form-group">
                   <label>Handle, Phone, or Email</label>
-                  <input
-                    type="text"
-                    placeholder="@username, +1-555-0123, or email@domain.com"
-                    value={formData.handle}
-                    onChange={(e) => setFormData({...formData, handle: e.target.value})}
-                    required
-                  />
+                  <div className="input-with-button">
+                    <input
+                      type="text"
+                      placeholder="@username, +1-555-0123, or email@domain.com"
+                      value={formData.handle}
+                      onChange={(e) => setFormData({...formData, handle: e.target.value})}
+                      required
+                    />
+                    <button 
+                      type="button" 
+                      className="generate-nickname-btn"
+                      onClick={generateNicknameSuggestion}
+                      title="Generate Ultra Nickname"
+                    >
+                      🎲
+                    </button>
+                  </div>
                 </div>
                 <div className="form-group">
                   <label>Display Name</label>
@@ -250,41 +225,61 @@ const AuthScreen = ({ onLogin }) => {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Privacy Mode</label>
+                  <label>Account Type</label>
                   <select 
-                    value={formData.profileMode}
-                    onChange={(e) => setFormData({...formData, profileMode: e.target.value})}
+                    value={formData.accountType}
+                    onChange={(e) => setFormData({...formData, accountType: e.target.value})}
+                    className={`account-type-select account-type-${formData.accountType.toLowerCase().replace(/\s+/g, '-')}`}
                   >
-                    <option value="Basic">Basic - Minimal profile</option>
-                    <option value="Public">Public - Social handles visible</option>
-                    <option value="Anon">Anonymous - Complete privacy</option>
-                    <option value="Ultra">Ultra - Web of Trust + Crypto Tipping</option>
+                    <option value="Basic">Basic - Minimal access, mostly read-only or limited chat</option>
+                    <option value="Public">Public - Social handles and enhanced visibility</option>
+                    <option value="Legacy">Legacy/OG - Historical user privileges with standard chat, voice, and event access</option>
+                    <option value="Pro">Pro - Professional user with enhanced capabilities and full feature set</option>
+                    <option value="Ultra">Ultra - Unified access to all your social accounts</option>
+                    <option value="Ultra Elite">Ultra Elite - Elite user with maximum features and priority access</option>
+                    <option value="Anon Pro">Anon Pro - Professional anonymity with enhanced privacy features and stealth/lockdown modes</option>
+                    <option value="Anon">Anon - Complete anonymity with session-based identity</option>
                   </select>
+                  
+                  {/* Account Type Legend */}
+                  <div className="account-type-legend">
+                    <div className="account-type-legend-item">
+                      <div className="account-type-legend-color legend-basic"></div>
+                      <span>Basic</span>
+                    </div>
+                    <div className="account-type-legend-item">
+                      <div className="account-type-legend-color legend-public"></div>
+                      <span>Public</span>
+                    </div>
+                    <div className="account-type-legend-item">
+                      <div className="account-type-legend-color legend-legacy"></div>
+                      <span>Legacy/OG</span>
+                    </div>
+                    <div className="account-type-legend-item">
+                      <div className="account-type-legend-color legend-pro"></div>
+                      <span>Pro</span>
+                    </div>
+                    <div className="account-type-legend-item">
+                      <div className="account-type-legend-color legend-ultra"></div>
+                      <span>Ultra</span>
+                    </div>
+                    <div className="account-type-legend-item">
+                      <div className="account-type-legend-color legend-ultra-elite"></div>
+                      <span>Ultra Elite</span>
+                    </div>
+                    <div className="account-type-legend-item">
+                      <div className="account-type-legend-color legend-anon-pro"></div>
+                      <span>Anon Pro</span>
+                    </div>
+                    <div className="account-type-legend-item">
+                      <div className="account-type-legend-color legend-anon"></div>
+                      <span>Anon</span>
+                    </div>
+                  </div>
                 </div>
-                
-                {/* Enhanced v1.2.3 Alpha Options */}
-                <div className="form-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={formData.enableCrypto}
-                      onChange={(e) => setFormData({...formData, enableCrypto: e.target.checked})}
-                    />
-                    <span>Enable Crypto Tipping (BTC, ETH, DOGE, LTC, SOL, PYTH, LINK)</span>
-                  </label>
-                </div>
-                
-                <div className="form-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={formData.acceptedTerms}
-                      onChange={(e) => setFormData({...formData, acceptedTerms: e.target.checked})}
-                      required
-                    />
-                    <span>I accept the Terms of Service and Privacy Policy</span>
-                  </label>
-                </div>
+
+                {/* Enhanced v1.2.3.4 Final Options */}
+
               </>
             )}
 
@@ -298,42 +293,70 @@ const AuthScreen = ({ onLogin }) => {
                     <li>Open UltraChat on your other device</li>
                     <li>Go to Settings → Backup & Sync</li>
                     <li>Generate QR code for this device</li>
-                    <li>Click "Start Scanning" below to use camera</li>
+                    <li>Click &#34;Start Scanning&#34; below to use camera</li>
                   </ol>
                 </div>
-                <div className="qr-preview">
-                  <div className="qr-placeholder">
-                    <span className="qr-icon">📷</span>
-                    <p>Camera will open when you click "Start Scanning"</p>
+                <div className="qr-demo">
+                  <div className="qr-code-demo">
+                    <div className="qr-pattern">
+                      <div className="qr-corner tl"></div>
+                      <div className="qr-corner tr"></div>
+                      <div className="qr-data"></div>
+                      <div className="qr-corner bl"></div>
+                      <div className="qr-corner br"></div>
+                    </div>
+                    <p className="qr-demo-text">Sample QR Code Pattern</p>
                   </div>
                 </div>
               </div>
             )}
 
-            {['discord', 'telegram', 'twitter', 'signal'].includes(authMethod) && (
+            {authMethod === 'device' && (
               <div className="platform-auth">
-                <div className="platform-icon">
-                  {authMethods.find(m => m.id === authMethod)?.icon}
-                </div>
-                <h3>Connect via {authMethods.find(m => m.id === authMethod)?.name}</h3>
+                <div className="platform-icon">🔐</div>
+                <h3>Device-Based Authentication</h3>
                 <div className="platform-instructions">
-                  <p>To connect via {authMethod}:</p>
-                  <ol>
-                    <li>Open {authMethod} app</li>
-                    <li>Find the UltraChat bot</li>
-                    <li>Send command: <code>/connect</code></li>
-                    <li>Follow the bot's instructions</li>
-                  </ol>
+                  <p>UltraChat uses device-based authentication for maximum security:</p>
+                  <ul>
+                    <li>Each device has a unique cryptographic identity</li>
+                    <li>No external credentials or passwords required</li>
+                    <li>All data is encrypted locally on your device</li>
+                    <li>Your identity cannot be compromised by external platforms</li>
+                  </ul>
+                  <p className="note">
+                    <strong>Note:</strong> This approach ensures you can never be banned from your own app.
+                    All communication is handled directly by UltraChat without intermediary bots or bridges.
+                  </p>
                 </div>
-                <div className="form-group">
-                  <label>{authMethod.charAt(0).toUpperCase() + authMethod.slice(1)} Username/ID</label>
-                  <input
-                    type="text"
-                    placeholder={`Your ${authMethod} username or ID`}
-                    value={formData.handle}
-                    onChange={(e) => setFormData({...formData, handle: e.target.value})}
-                    required
-                  />
+                
+                {/* Device Status */}
+                <div className="bot-assignment">
+                  <h4>_DEVICE STATUS_</h4>
+                  {deviceStatus === 'connected' ? (
+                    <p className="status-connected">✅ Device identity verified</p>
+                  ) : deviceStatus === 'checking' ? (
+                    <p className="status-checking">🔍 Verifying device identity...</p>
+                  ) : (
+                    <p className="status-disconnected">❌ Device identity not found</p>
+                  )}
+                  
+                  <div className="form-group">
+                    <label>Device Identity</label>
+                    <div className="platform-status">
+                      <span className="platform-indicator device">🔐 Cryptographic Identity</span>
+                    </div>
+                  </div>
+                  
+                  {deviceStatus !== 'connected' && (
+                    <div className="setup-instructions">
+                      <p>To enable device-based authentication:</p>
+                      <ol>
+                        <li>Start the UltraChat Unified Server</li>
+                        <li>Allow UltraChat to create a device identity</li>
+                        <li>Restart this application</li>
+                      </ol>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -343,9 +366,7 @@ const AuthScreen = ({ onLogin }) => {
               className="auth-submit-btn"
               disabled={(authMethod !== 'qr' && !formData.handle.trim()) || (!formData.acceptedTerms && authMethod !== 'qr')}
             >
-              {authMethod === 'qr' ? 'Start Scanning' : 
-               ['discord', 'telegram', 'twitter', 'signal'].includes(authMethod) ? 'Connect via Bridge' : 
-               'Sign In to UltraChat'}
+              {authMethod === 'qr' ? 'Start Scanning' : 'Sign In to UltraChat'}
             </button>
           </form>
 
@@ -359,8 +380,8 @@ const AuthScreen = ({ onLogin }) => {
               <span>Zero Tracking</span>
             </div>
             <div className="feature">
-              <span className="feature-icon">🌐</span>
-              <span>Cross-Platform Bridges</span>
+              <span className="feature-icon">🔐</span>
+              <span>Device-Based Identity</span>
             </div>
             <div className="feature">
               <span className="feature-icon">💰</span>
@@ -408,8 +429,8 @@ const AuthScreen = ({ onLogin }) => {
               </div>
               
               <div className="onboarding-feature">
-                <h4>🌐 Bot Bridge</h4>
-                <p>Connect Discord, Telegram, Twitter/X, and Signal for seamless messaging.</p>
+                <h4>🔐 Device-Based Identity</h4>
+                <p>Your identity is secured with cryptographic keys stored only on your device. No external platform can ban you from your own app.</p>
               </div>
               
               <div className="onboarding-feature">

@@ -10,23 +10,23 @@ import ProfileModes from '../src/services/Profiles/ProfileModes.js'
 import SocialHandles from '../src/services/Profiles/SocialHandles.js'
 import MessageEncryption from '../src/services/Messaging/MessageEncryption.js'
 import LocalStorage from '../src/utils/LocalStorage.js'
-import Constants from '../src/utils/Constants.js'
+import * as Constants from '../src/utils/Constants.js'
 
 describe('UltraChat Core Components', () => {
   describe('Constants', () => {
     it('should have all required constants defined', () => {
-      expect(Constants.APP_CONFIG).toBeDefined()
-      expect(Constants.PROFILE_MODES).toBeDefined()
-      expect(Constants.ENCRYPTION_CONSTANTS).toBeDefined()
-      expect(Constants.DEFAULT_SETTINGS).toBeDefined()
-    })
+      expect(Constants.APP_CONFIG).toBeDefined();
+      expect(Constants.PROFILE_MODES).toBeDefined();
+      expect(Constants.CRYPTO_CONFIG).toBeDefined();
+      expect(Constants.DEFAULT_SETTINGS).toBeDefined();
+    });
 
     it('should have valid profile modes', () => {
-      expect(Constants.PROFILE_MODES.BASIC).toBe('Basic')
-      expect(Constants.PROFILE_MODES.PUBLIC).toBe('Public')
-      expect(Constants.PROFILE_MODES.ANON).toBe('Anon')
-      expect(Constants.PROFILE_MODES.ULTRA).toBe('Ultra')
-    })
+      expect(Constants.PROFILE_MODES.BASIC).toBe('Basic');
+      expect(Constants.PROFILE_MODES.PUBLIC).toBe('Public');
+      expect(Constants.PROFILE_MODES.ANONYMOUS).toBe('Anonymous');
+      expect(Constants.PROFILE_MODES.ULTRA).toBe('Ultra');
+    });
   })
 
   describe('CryptoUtils', () => {

@@ -2,6 +2,7 @@ module.exports = {
   env: {
     browser: true,
     es2020: true,
+    node: true,
   },
   extends: [
     'eslint:recommended',
@@ -27,4 +28,19 @@ module.exports = {
     ],
     'react/prop-types': 'off',
   },
+  overrides: [
+    {
+      files: ['backend/**/*.js', 'tests/**/*.js'],
+      env: {
+        node: true,
+        es2020: true,
+        jest: true,
+      },
+      rules: {
+        'react-refresh/only-export-components': 'off',
+        'react/jsx-runtime': 'off',
+        'react-hooks/recommended': 'off',
+      },
+    },
+  ],
 }

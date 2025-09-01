@@ -8,7 +8,7 @@
  * - Fresh 2025 UI with smooth animations
  */
 
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import './QuickAutoReply.css'
 
 const QuickAutoReply = ({ autoReplyManager, onSendReply, isVisible = true }) => {

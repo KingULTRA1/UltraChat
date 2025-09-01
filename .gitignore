@@ -1,4 +1,6 @@
-# Dependencies
+# ========================
+# Node.js / JS Dependencies
+# ========================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -6,34 +8,48 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# ========================
 # Build outputs
+# ========================
 dist/
 build/
 .output/
 .vercel/
 .netlify/
 
+# ========================
 # Environment variables
+# ========================
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*.local
 
-# Bot configuration (NEVER commit these!)
+# ========================
+# Bot configuration (never commit!)
+# ========================
 bot_config.json
-.env.local
-*.env.local
 config.local.*
+local_security.md
+SECURITY_CONFIG.md
 
+# ========================
 # IDE and editor files
+# ========================
 .vscode/
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
 *~
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
+# ========================
 # OS generated files
+# ========================
 .DS_Store
 .DS_Store?
 ._*
@@ -42,130 +58,89 @@ config.local.*
 ehthumbs.db
 Thumbs.db
 
+# ========================
 # Logs
-logs
+# ========================
+logs/
 *.log
-
-# Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
+# ========================
+# Coverage / test output
+# ========================
 coverage/
 *.lcov
-
-# nyc test coverage
 .nyc_output
+test-results/
 
+# ========================
 # Dependency directories
+# ========================
 jspm_packages/
-
-# Optional npm cache directory
 .npm
 
-# Optional eslint cache
+# ========================
+# Cache files
+# ========================
 .eslintcache
-
-# Optional REPL history
 .node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
 .yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
 
-# Next.js build output
+# ========================
+# Framework build outputs
+# ========================
 .next
-
-# Nuxt.js build / generate output
 .nuxt
-
-# Storybook build outputs
 .out
 .storybook-out
 
-# Temporary folders
+# ========================
+# Temp files
+# ========================
 tmp/
 temp/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Local config/user settings (make sure to ignore user-specific files)
-settings.json
-config.local.json
->>>>>>> fbc0b147594d7e709c50a95e7c1a32d56c36a7ae
-
-# Test files
-test-results/
-coverage/
-# Local config/user settings (make sure to ignore user-specific files)
+# ========================
+# Local config/user settings
+# ========================
 settings.json
 config.local.json
 
+# ========================
 # UltraChat specific
-# Don't commit local storage data
+# ========================
 localStorage.json
 userData/
 conversations/
 keys/
-
-# Ignore local security file with private contact info (not for GitHub)
-local_security.md
-
-# Local development configuration files
-.gitignore.local
-SECURITY_CONFIG.md
-
-# Audio, video, images, and documents (user uploaded files)
-uploads/
-media/
-*.mp3
-*.mp4
-*.wav
-*.avi
-*.mov
-*.pdf
-*.doc
-*.docx
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.webp
-
-# Web of Trust data
 trust_data/
 endorsements/
 user_notes/
-
-# Audit logs (sensitive data)
 audit_logs.json
 pending_operations.json
 
-# Test files
-test-results/
-coverage/
-=======
-# Local config/user settings (make sure to ignore user-specific files)
-settings.json
-config.local.json
->>>>>>> fbc0b147594d7e709c50a95e7c1a32d56c36a7ae
+# ========================
+# User uploads (ignore only user media, not project assets)
+# ========================
+uploads/
+media/
+uploads/*
+media/*
 
-# Test files
-test-results/
-coverage/
+# ========================
+# Local developer-specific ignores (optional if you keep a .gitignore.local)
+# ========================
+*.personal
+*.local
+*.notes.md
+*.todo.md
+personal_notes/
+dev_notes/
+scratch/
+experiments/
+playground/

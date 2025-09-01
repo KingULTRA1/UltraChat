@@ -1,10 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import CallModal from './CallModal'
 import QuickAutoReply from './QuickAutoReply'
+import ModerationControls from '../Moderation/ModerationControls'
+import SpamDetectionWrapper from '../Moderation/SpamDetectionWrapper'
 import AutoReplyManager from '../../services/Messaging/AutoReplyManager'
 import MessageManagement from '../../services/Management/MessageManagement'
 import CryptoTipping from '../../services/Finance/CryptoTipping'
 import TrustIntegrationService from '../../services/Integration/TrustIntegrationService'
+import ChatModerationService from '../../services/Moderation/ChatModerationService'
+import RealTimeModerationService from '../../services/Moderation/RealTimeModerationService'
 import AuditManager from '../../services/Management/AuditManager'
 import TrustManager from '../../services/Trust/TrustManager'
 import './MessageWindow.css'
@@ -41,6 +45,7 @@ const MessageWindow = ({ selectedChat }) => {
   const [messageManagement, setMessageManagement] = useState(null)
   const [cryptoTipping, setCryptoTipping] = useState(null)
   const [trustIntegration, setTrustIntegration] = useState(null)
+  const [moderationService, setModerationService] = useState(null)
   const [showMessageActions, setShowMessageActions] = useState({})
   const [showTipModal, setShowTipModal] = useState(null)
   const [showEditModal, setShowEditModal] = useState(null)
@@ -130,6 +135,25 @@ const MessageWindow = ({ selectedChat }) => {
         await trustIntegrationSvc.initialize()
         setTrustIntegration(trustIntegrationSvc)
         
+        // Initialize moderation service
+        const moderation = new ChatModerationService()
+        await moderation.initialize()
+        setModerationService(moderation)
+        
+        // Initialize real-time moderation integration
+        const realTimeModeration = new RealTimeModerationService()
+        await realTimeModeration.initialize()
+        setRealTimeModerationService(realTimeModeration)
+        
+        // Register current user session
+        if (currentUser) {
+          moderation.registerUserSession(currentUser, {
+            ip: 'localhost', // In production, get real IP
+            deviceFingerprint: 'browser_session',
+            roomId: selectedChat.id
+          })
+        }
+        
       } catch (error) {
         console.error('Failed to initialize services:', error)
       }
@@ -152,13 +176,74 @@ const MessageWindow = ({ selectedChat }) => {
       if (trustIntegration) {
         trustIntegration.destroy()
       }
+      if (moderationService) {
+        // No destroy method needed for moderation service - it saves state automatically
+      }
     }
-  }, [selectedChat])
+  }, [selectedChat, autoReplyManager, messageManagement, cryptoTipping, trustIntegration, moderationService, currentUser])
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [messages, scrollToBottom])
+  
+  // Listen for call events from ChatList quick actions
+  useEffect(() => {
+    const handleCallEvent = (event) => {
+      const { type, chatId } = event.detail
+      if (selectedChat && selectedChat.id === chatId) {
+        handleCall(type)
+      }
+    }
+    
+    // Listen for moderation events
+    const handleMessageBlocked = (event) => {
+      const { messageId, reason, action, user } = event.detail
+      console.log('🚫 Message blocked:', { messageId, reason, action })
+      
+      // Remove blocked message from UI
+      setMessages(prev => prev.filter(msg => msg.id !== messageId))
+      
+      // Show notification to user
+      if (user.id === currentUser?.id) {
+        const blockMessage = action === 'kick' 
+          ? 'You have been removed for violating chat rules'
+          : `Message blocked: ${reason}`
+        alert(`🚨 ${blockMessage}`)
+      }
+    }
+    
+    const handleUserKicked = (event) => {
+      const { user, roomId, reason } = event.detail
+      if (roomId === selectedChat?.id) {
+        console.log(`👢 User ${user.username} was kicked:`, reason)
+        
+        // Show system message about kick
+        const kickMessage = {
+          id: `kick_${Date.now()}`,
+          senderId: 'system',
+          senderName: 'System',
+          content: `⚠️ ${user.username} was removed from the chat`,
+          timestamp: new Date(),
+          isEncrypted: false,
+          status: 'delivered',
+          isSystemMessage: true
+        }
+        
+        setMessages(prev => [...prev, kickMessage])
+      }
+    }
+    
+    window.addEventListener('startCall', handleCallEvent)
+    window.addEventListener('messageBlocked', handleMessageBlocked)
+    window.addEventListener('userKicked', handleUserKicked)
+    
+    return () => {
+      window.removeEventListener('startCall', handleCallEvent)
+      window.removeEventListener('messageBlocked', handleMessageBlocked)
+      window.removeEventListener('userKicked', handleUserKicked)
+    }
+  }, [selectedChat, callManager, currentUser, handleCall, setMessages])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -169,6 +254,33 @@ const MessageWindow = ({ selectedChat }) => {
     
     if (!newMessage.trim() || !selectedChat) return
 
+    // Check for spam before sending
+    if (moderationService) {
+      const spamCheck = await moderationService.checkForSpam(currentUser, {
+        content: newMessage.trim(),
+        id: Date.now().toString(),
+        timestamp: new Date()
+      })
+      
+      if (spamCheck.isSpam) {
+        // Show spam warning to user
+        alert(`🚨 ${spamCheck.message || 'Message flagged as spam'}`)
+        
+        if (spamCheck.action === 'kick') {
+          // Clear input and show kick message
+          setNewMessage('')
+          alert('🚫 You have been removed from the chat. Please rejoin with a new nickname and follow chat rules.')
+          return
+        }
+        
+        // For warnings, still allow the message but clear input to prevent repeat
+        if (spamCheck.action === 'warn') {
+          setNewMessage('')
+          return
+        }
+      }
+    }
+
     const message = {
       id: Date.now().toString(),
       senderId: 'me',
@@ -178,6 +290,15 @@ const MessageWindow = ({ selectedChat }) => {
       isEncrypted: true,
       status: 'sending'
     }
+
+    // Emit message sent event for real-time moderation
+    window.dispatchEvent(new CustomEvent('messageSent', {
+      detail: {
+        message: message,
+        user: currentUser,
+        roomId: selectedChat?.id
+      }
+    }))
 
     setMessages(prev => [...prev, message])
     setNewMessage('')
@@ -574,6 +695,15 @@ const MessageWindow = ({ selectedChat }) => {
       console.error('Failed to end call:', error)
     }
   }
+  
+  // Unified call handler for both quick actions and in-chat buttons
+  const handleCall = (type) => {
+    if (type === 'voice' || type === CALL_TYPES.VOICE) {
+      handleVoiceCall()
+    } else if (type === 'video' || type === CALL_TYPES.VIDEO) {
+      handleVideoCall()
+    }
+  }
 
   if (!selectedChat) {
     return (
@@ -589,13 +719,20 @@ const MessageWindow = ({ selectedChat }) => {
             </div>
             <div className="feature-item">
               <span className="feature-icon">🛡️</span>
-              <span>Privacy First</span>
+              <span>Local Data Only</span>
             </div>
             <div className="feature-item">
               <span className="feature-icon">📱</span>
               <span>Cross-Platform</span>
             </div>
           </div>
+          {/* Add New Chat Button */}
+          <button 
+            className="new-chat-btn-large"
+            onClick={() => window.dispatchEvent(new CustomEvent('openNewChat'))}
+          >
+            🆕 Start New Chat
+          </button>
         </div>
       </div>
     )
@@ -629,6 +766,14 @@ const MessageWindow = ({ selectedChat }) => {
         </div>
         
         <div className="header-actions">
+          {/* Add New Chat Button to Header */}
+          <button 
+            className="header-btn new-chat-btn"
+            title="New Chat"
+            onClick={() => window.dispatchEvent(new CustomEvent('openNewChat'))}
+          >
+            🆕
+          </button>
           <button 
             className="header-btn voice-call-btn" 
             title="Voice Call"
@@ -665,78 +810,117 @@ const MessageWindow = ({ selectedChat }) => {
       <div className="messages-container">
         <div className="messages-list">
           {messages.map(message => (
-            <div
+            <SpamDetectionWrapper
               key={message.id}
-              className={`message ${message.senderId === 'me' ? 'sent' : 'received'} ${message.isAutoReply ? 'auto-reply' : ''}`}
-              onMouseEnter={() => handleMessageAction(message.id, 'show')}
-              onMouseLeave={() => handleMessageAction(message.id, 'hide')}
+              user={{
+                id: message.senderId,
+                username: message.senderName,
+                trustLevel: message.senderId === 'me' ? currentUser.trustLevel : (selectedChat.trustScore || 0)
+              }}
+              message={{
+                content: message.content,
+                id: message.id,
+                timestamp: message.timestamp
+              }}
+              onSpamDetected={(result, user, msg) => {
+                console.log('🚨 Spam detected:', { result, user, msg })
+                // Handle spam detection - message will be blocked automatically
+              }}
+              onMessageBlocked={(blockInfo) => {
+                console.log('🚫 Message blocked:', blockInfo)
+                // Optionally show notification to moderators
+              }}
             >
-              <div className="message-content">
-                <div className="message-bubble">
-                  {message.isAutoReply && (
-                    <div className="auto-reply-tag">
-                      <span className="auto-icon">🤖</span>
-                      <span className="auto-text">Auto</span>
+              <div
+                className={`message ${message.senderId === 'me' ? 'sent' : 'received'} ${message.isAutoReply ? 'auto-reply' : ''}`}
+                onMouseEnter={() => handleMessageAction(message.id, 'show')}
+                onMouseLeave={() => handleMessageAction(message.id, 'hide')}
+              >
+                <div className="message-content">
+                  <div className="message-bubble">
+                    {message.isAutoReply && (
+                      <div className="auto-reply-tag">
+                        <span className="auto-icon">🤖</span>
+                        <span className="auto-text">Auto</span>
+                      </div>
+                    )}
+                    <p className={message.isAutoReply ? 'auto-reply-text' : ''}>
+                      {message.content}
+                      {message.edited && <span className="edited-indicator"> (edited)</span>}
+                    </p>
+                    <div className="message-meta">
+                      <span className="message-time">
+                        {formatMessageTime(message.timestamp)}
+                      </span>
+                      {message.senderId === 'me' && (
+                        <span className="message-status">
+                          {getStatusIcon(message.status)}
+                        </span>
+                      )}
+                      {message.isEncrypted && (
+                        <span className="encryption-indicator">🔒</span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Message Actions */}
+                  {showMessageActions[message.id] && (
+                    <div className="message-actions">
+                      <button 
+                        className="action-btn tip-btn" 
+                        onClick={() => handleTipMessage(message)}
+                        title="Send Tip"
+                      >
+                        💰
+                      </button>
+                      {message.senderId === 'me' && (
+                        <>
+                          <button 
+                            className="action-btn edit-btn" 
+                            onClick={() => handleEditMessage(message)}
+                            title="Edit Message"
+                          >
+                            ✏️
+                          </button>
+                          <button 
+                            className="action-btn delete-btn" 
+                            onClick={() => handleDeleteMessage(message)}
+                            title="Delete Message"
+                          >
+                            🗑️
+                          </button>
+                        </>
+                      )}
+                      <button 
+                        className="action-btn reply-btn" 
+                        onClick={() => setNewMessage(`@${message.senderName}: `)}
+                        title="Reply"
+                      >
+                        ↩️
+                      </button>
+                      
+                      {/* Moderation Controls - for other users' messages */}
+                      {message.senderId !== 'me' && (
+                        <ModerationControls
+                          targetUser={{
+                            id: message.senderId,
+                            username: message.senderName,
+                            trustLevel: selectedChat.trustScore || 0
+                          }}
+                          currentUser={currentUser}
+                          onModerationAction={(action, user, result) => {
+                            console.log(`⚖️ Moderation action ${action} applied to ${user.username}:`, result)
+                            // Refresh message list or update UI as needed
+                          }}
+                          showQuickActions={true}
+                          isInline={true}
+                        />
+                      )}
                     </div>
                   )}
-                  <p className={message.isAutoReply ? 'auto-reply-text' : ''}>
-                    {message.content}
-                    {message.edited && <span className="edited-indicator"> (edited)</span>}
-                  </p>
-                  <div className="message-meta">
-                    <span className="message-time">
-                      {formatMessageTime(message.timestamp)}
-                    </span>
-                    {message.senderId === 'me' && (
-                      <span className="message-status">
-                        {getStatusIcon(message.status)}
-                      </span>
-                    )}
-                    {message.isEncrypted && (
-                      <span className="encryption-indicator">🔒</span>
-                    )}
-                  </div>
                 </div>
-                
-                {/* Message Actions */}
-                {showMessageActions[message.id] && (
-                  <div className="message-actions">
-                    <button 
-                      className="action-btn tip-btn" 
-                      onClick={() => handleTipMessage(message)}
-                      title="Send Tip"
-                    >
-                      💰
-                    </button>
-                    {message.senderId === 'me' && (
-                      <>
-                        <button 
-                          className="action-btn edit-btn" 
-                          onClick={() => handleEditMessage(message)}
-                          title="Edit Message"
-                        >
-                          ✏️
-                        </button>
-                        <button 
-                          className="action-btn delete-btn" 
-                          onClick={() => handleDeleteMessage(message)}
-                          title="Delete Message"
-                        >
-                          🗑️
-                        </button>
-                      </>
-                    )}
-                    <button 
-                      className="action-btn reply-btn" 
-                      onClick={() => setNewMessage(`@${message.senderName}: `)}
-                      title="Reply"
-                    >
-                      ↩️
-                    </button>
-                  </div>
-                )}
               </div>
-            </div>
+            </SpamDetectionWrapper>
           ))}
           
           {isTyping && (

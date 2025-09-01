@@ -1,7 +1,7 @@
 {
   "name": "ultrachat",
   "private": true,
-  "version": "1.2.3",
+  "version": "1.2.3.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,16 +11,26 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "check-ports": "node scripts/check-ports.js",
+    "kill-ports": "node scripts/kill-ports.js",
+    "clean-install": "node scripts/clean-install.js",
+    "demo:ultra": "node src/services/Communication/ultra-generator-demo.js",
+    "demo:integration": "node src/services/Communication/ultra-integration-demo.js",
+    "demo:text-enhanced": "node src/services/Communication/ultra-text-enhanced-demo.js"
   },
   "dependencies": {
+    "crypto-js": "^4.1.1",
+    "lucide-react": "^0.279.0",
+    "qrcode": "^1.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.15.0",
-    "crypto-js": "^4.1.1",
-    "lucide-react": "^0.279.0"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.0.3",

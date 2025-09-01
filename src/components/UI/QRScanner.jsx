@@ -15,7 +15,7 @@
  * like jsQR if advanced QR code support is needed.
  */
 
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './QRScanner.css'
 
 const QRScanner = ({ onScan, onError, onClose }) => {
@@ -24,12 +24,35 @@ const QRScanner = ({ onScan, onError, onClose }) => {
   const [devices, setDevices] = useState([])
   const [selectedDevice, setSelectedDevice] = useState('')
   const [scanResult, setScanResult] = useState(null)
+  const [cameraError, setCameraError] = useState(null)
+  const [isSecureContext, setIsSecureContext] = useState(true)
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const streamRef = useRef(null)
   const scanIntervalRef = useRef(null)
 
   useEffect(() => {
+    // Check if we're in a secure context (HTTPS or localhost)
+    const secureContext = window.isSecureContext;
+    setIsSecureContext(secureContext);
+    
+    if (!secureContext) {
+      const errorMessage = 'Camera access requires a secure connection (HTTPS). Please access this app via HTTPS or localhost.';
+      setCameraError(errorMessage);
+      setHasPermission(false);
+      onError?.(errorMessage);
+      return;
+    }
+    
+    // Check if getUserMedia is available
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      const errorMessage = 'Camera access is not supported in your browser. Please try a different browser.';
+      setCameraError(errorMessage);
+      setHasPermission(false);
+      onError?.(errorMessage);
+      return;
+    }
+    
     initializeCamera()
     return () => {
       cleanup()
@@ -38,60 +61,104 @@ const QRScanner = ({ onScan, onError, onClose }) => {
 
   const initializeCamera = async () => {
     try {
-      // Request camera permission
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: 'environment' // Use back camera on mobile
-        } 
-      })
-      setHasPermission(true)
-      
-      // Get available devices
+      // First, enumerate devices to see what's available
       const mediaDevices = await navigator.mediaDevices.enumerateDevices()
       const videoDevices = mediaDevices.filter(device => device.kind === 'videoinput')
       setDevices(videoDevices)
       
-      if (videoDevices.length > 0) {
-        setSelectedDevice(videoDevices[0].deviceId)
-        startScanning(videoDevices[0].deviceId)
+      // Request camera permission
+      const constraints = {
+        video: {
+          facingMode: 'environment', // Use back camera on mobile
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
       }
       
-      // Stop the initial stream
-      stream.getTracks().forEach(track => track.stop())
+      // If we have specific devices, use the first one
+      if (videoDevices.length > 0) {
+        constraints.video.deviceId = { exact: videoDevices[0].deviceId }
+        setSelectedDevice(videoDevices[0].deviceId)
+      }
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
+      setHasPermission(true)
+      setCameraError(null)
+      
+      streamRef.current = stream
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        try {
+          await videoRef.current.play()
+          setIsScanning(true)
+          // Start QR code scanning
+          scanIntervalRef.current = setInterval(scanForQR, 500)
+        } catch (playError) {
+          console.error('Video play error:', playError)
+          const errorMessage = 'Failed to start video playback: ' + playError.message + '. Please check if another application is using your camera.';
+          setCameraError(errorMessage)
+          onError?.(errorMessage)
+        }
+      }
     } catch (error) {
       console.error('Camera access error:', error)
       setHasPermission(false)
-      onError?.('Camera access denied. Please allow camera access and try again.')
+      
+      // Provide more specific error messages
+      let errorMessage = 'Camera access denied. Please allow camera access and try again.';
+      if (error.name === 'NotAllowedError') {
+        errorMessage = 'Camera access was denied. Please grant camera permission in your browser settings and try again.';
+      } else if (error.name === 'NotFoundError' || error.name === 'OverconstrainedError') {
+        errorMessage = 'No camera found or camera not available. Please check if your device has a camera and it\'s not being used by another application.';
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = 'Camera is already in use by another application. Please close other applications using the camera and try again.';
+      } else if (error.name === 'AbortError') {
+        errorMessage = 'Camera access was interrupted. Please try again.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setCameraError(errorMessage)
+      onError?.(errorMessage)
     }
   }
 
   const startScanning = async (deviceId = selectedDevice) => {
     try {
-      setIsScanning(true)
+      // Clean up any existing stream
+      cleanup()
       
       const constraints = {
         video: {
           deviceId: deviceId ? { exact: deviceId } : undefined,
           facingMode: deviceId ? undefined : 'environment',
-          width: { ideal: 640 },
-          height: { ideal: 480 }
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         }
       }
       
       const stream = await navigator.mediaDevices.getUserMedia(constraints)
       streamRef.current = stream
+      setCameraError(null)
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        videoRef.current.play()
-        
-        // Start QR code scanning
-        scanIntervalRef.current = setInterval(scanForQR, 500)
+        try {
+          await videoRef.current.play()
+          setIsScanning(true)
+          // Start QR code scanning
+          scanIntervalRef.current = setInterval(scanForQR, 500)
+        } catch (playError) {
+          console.error('Video play error:', playError)
+          setCameraError('Failed to start video playback: ' + playError.message)
+          onError?.('Failed to start video playback: ' + playError.message)
+        }
       }
     } catch (error) {
       console.error('Failed to start camera:', error)
-      setIsScanning(false)
-      onError?.('Failed to start camera: ' + error.message)
+      setCameraError(error.message || 'Failed to start camera')
+      onError?.('Failed to start camera: ' + (error.message || 'Unknown error'))
     }
   }
 
@@ -178,17 +245,18 @@ const QRScanner = ({ onScan, onError, onClose }) => {
 
   const switchCamera = async (deviceId) => {
     setSelectedDevice(deviceId)
-    cleanup()
     await startScanning(deviceId)
   }
 
   const cleanup = () => {
     if (scanIntervalRef.current) {
       clearInterval(scanIntervalRef.current)
+      scanIntervalRef.current = null
     }
     
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current = null
     }
     
     setIsScanning(false)
@@ -199,146 +267,185 @@ const QRScanner = ({ onScan, onError, onClose }) => {
     const input = e.target.qrData.value.trim()
     if (input) {
       try {
-        JSON.parse(input) // Validate JSON
+        // Validate JSON format
+        JSON.parse(input)
         onScan?.(input)
-        onClose?.()
+        cleanup()
       } catch (error) {
-        onError?.('Invalid QR code data format')
+        onError?.('Invalid QR data format. Please enter valid JSON.')
       }
     }
-  }
-
-  if (hasPermission === null) {
-    return (
-      <div className="qr-scanner">
-        <div className="scanner-loading">
-          <div className="loading-spinner"></div>
-          <p>Requesting camera access...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (hasPermission === false) {
-    return (
-      <div className="qr-scanner">
-        <div className="scanner-error">
-          <div className="error-icon">📷</div>
-          <h3>Camera Access Required</h3>
-          <p>Please allow camera access to scan QR codes</p>
-          <div className="error-actions">
-            <button onClick={initializeCamera} className="retry-btn">
-              Try Again
-            </button>
-            <button onClick={onClose} className="close-btn">
-              Cancel
-            </button>
-          </div>
-          
-          {/* Manual input fallback */}
-          <div className="manual-input">
-            <h4>Or enter QR code data manually:</h4>
-            <form onSubmit={handleManualInput}>
-              <textarea 
-                name="qrData"
-                placeholder={`Paste QR code data here...\n\nExample format:\n{\n  "type": "ultrachat_login",\n  "version": "1.2.3",\n  "userId": "your_user_id",\n  "profileMode": "Ultra"\n}`}
-                rows="6"
-              />
-              <button type="submit">Import Data</button>
-            </form>
-            
-            {/* Test QR Data Generator */}
-            <div className="test-qr-section">
-              <h5>For Testing:</h5>
-              <button 
-                type="button" 
-                onClick={() => {
-                  const testData = JSON.stringify({
-                    type: 'ultrachat_login',
-                    version: '1.2.3',
-                    userId: 'test_user_' + Date.now(),
-                    profileMode: 'Ultra',
-                    timestamp: new Date().toISOString(),
-                    encrypted: true
-                  }, null, 2)
-                  const textarea = document.querySelector('[name="qrData"]')
-                  if (textarea) {
-                    textarea.value = testData
-                  }
-                }}
-                className="test-qr-btn"
-              >
-                Generate Test QR Data
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
     <div className="qr-scanner">
       <div className="scanner-header">
         <h3>Scan QR Code</h3>
-        <button onClick={onClose} className="close-btn">✕</button>
+        <button className="close-btn" onClick={() => {
+          cleanup();
+          onClose();
+        }}>✕</button>
       </div>
       
       <div className="scanner-content">
-        <div className="camera-container">
-          <video 
-            ref={videoRef} 
-            className="camera-video"
-            autoPlay 
-            playsInline 
-            muted
-          />
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
-          
-          {/* Scanning overlay */}
-          <div className="scanning-overlay">
-            <div className="scan-frame">
-              <div className="corner top-left"></div>
-              <div className="corner top-right"></div>
-              <div className="corner bottom-left"></div>
-              <div className="corner bottom-right"></div>
-              {isScanning && <div className="scan-line"></div>}
+        {!isSecureContext && (
+          <div className="scanner-error">
+            <div className="error-icon">🔒</div>
+            <h3>Secure Connection Required</h3>
+            <p>Camera access requires a secure connection (HTTPS).</p>
+            <div className="error-details">
+              <p className="error-description">
+                To use the QR scanner, you need to access this app through a secure connection.
+                You're currently accessing it through an insecure connection which doesn't allow 
+                camera access for security reasons.
+              </p>
+              <p className="solution">
+                <strong>Solution:</strong> Access this app via:
+              </p>
+              <ul>
+                <li><code>http://localhost:3000</code> (for local development)</li>
+                <li><code>https://your-domain.com</code> (for production with SSL)</li>
+              </ul>
+              <p className="note">
+                <strong>Note:</strong> If you're already using localhost but still seeing this error,
+                check that you're using <code>localhost</code> and not an IP address like <code>127.0.0.1</code>.
+              </p>
             </div>
-          </div>
-        </div>
-        
-        {/* Camera controls */}
-        {devices.length > 1 && (
-          <div className="camera-controls">
-            <label>Camera:</label>
-            <select 
-              value={selectedDevice} 
-              onChange={(e) => switchCamera(e.target.value)}
-            >
-              {devices.map((device, index) => (
-                <option key={device.deviceId} value={device.deviceId}>
-                  {device.label || `Camera ${index + 1}`}
-                </option>
-              ))}
-            </select>
+            <div className="error-actions">
+              <button className="test-qr-btn" onClick={() => {
+                const testData = JSON.stringify({
+                  type: 'ultrachat_login',
+                  version: '1.2.3',
+                  userId: 'user_' + Date.now().toString(36),
+                  profileMode: 'Ultra',
+                  timestamp: new Date().toISOString(),
+                  encrypted: true
+                });
+                onScan?.(testData);
+                cleanup();
+              }}>
+                Use Test QR Data
+              </button>
+              <button className="close-btn" onClick={onClose}>Cancel</button>
+            </div>
           </div>
         )}
         
-        <div className="scanner-instructions">
-          <p>📱 Point your camera at the QR code</p>
-          <p>🔍 Make sure the QR code is clearly visible</p>
-          <p>✨ Scanning will happen automatically</p>
-        </div>
-        
-        {scanResult && (
-          <div className="scan-result">
-            <div className="result-icon">✅</div>
-            <p>QR Code detected! Processing...</p>
+        {isSecureContext && hasPermission === null && !cameraError && (
+          <div className="scanner-loading">
+            <div className="loading-spinner"></div>
+            <p>Requesting camera access...</p>
           </div>
+        )}
+        
+        {isSecureContext && cameraError && (
+          <div className="scanner-error">
+            <div className="error-icon">🚫</div>
+            <h3>Camera Error</h3>
+            <p>{cameraError}</p>
+            <div className="error-details">
+              <p>Troubleshooting tips:</p>
+              <ul>
+                <li>Check if another application is using your camera</li>
+                <li>Ensure you've granted camera permissions in your browser</li>
+                <li>Try refreshing the page</li>
+                <li>Check your browser's camera settings</li>
+                <li>Try a different browser if the issue persists</li>
+              </ul>
+            </div>
+            <div className="error-actions">
+              <button className="retry-btn" onClick={initializeCamera}>Retry</button>
+              <button className="close-btn" onClick={onClose}>Cancel</button>
+            </div>
+          </div>
+        )}
+        
+        {isSecureContext && hasPermission === false && !cameraError && (
+          <div className="scanner-error">
+            <div className="error-icon">🚫</div>
+            <h3>Camera Access Denied</h3>
+            <p>Please allow camera access to scan QR codes.</p>
+            <div className="error-details">
+              <p>To enable camera access:</p>
+              <ul>
+                <li>Look for the camera icon in your browser's address bar</li>
+                <li>Click it and select "Always allow" for this site</li>
+                <li>Refresh the page and try again</li>
+              </ul>
+            </div>
+            <div className="error-actions">
+              <button className="retry-btn" onClick={initializeCamera}>Retry</button>
+              <button className="close-btn" onClick={onClose}>Cancel</button>
+            </div>
+          </div>
+        )}
+        
+        {isSecureContext && hasPermission === true && (
+          <>
+            <div className="camera-container">
+              <video 
+                ref={videoRef} 
+                autoPlay 
+                playsInline 
+                muted
+                className="camera-video"
+              />
+              <canvas ref={canvasRef} hidden />
+              <div className="camera-active-text">Camera Active</div>
+            </div>
+            
+            {devices.length > 1 && (
+              <div className="camera-selection">
+                <select 
+                  value={selectedDevice}
+                  onChange={(e) => switchCamera(e.target.value)}
+                >
+                  {devices.map((device, index) => (
+                    <option key={device.deviceId} value={device.deviceId}>
+                      Camera {index + 1}{device.label ? ` - ${device.label}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            
+            <div className="manual-input">
+              <h4>Or enter QR data manually:</h4>
+              <form onSubmit={handleManualInput}>
+                <textarea 
+                  name="qrData"
+                  placeholder='{"type":"ultrachat_login","userId":"user_abc123"}'
+                  rows="4"
+                />
+                <button type="submit">Process QR Data</button>
+              </form>
+            </div>
+            
+            <div className="test-qr-section">
+              <h5>Development Mode</h5>
+              <button 
+                className="test-qr-btn"
+                onClick={() => {
+                  const testData = JSON.stringify({
+                    type: 'ultrachat_login',
+                    version: '1.2.3',
+                    userId: 'user_' + Date.now().toString(36),
+                    profileMode: 'Ultra',
+                    timestamp: new Date().toISOString(),
+                    encrypted: true
+                  });
+                  onScan?.(testData);
+                  cleanup();
+                }}
+              >
+                Generate Test QR
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default QRScanner
+export default QRScanner;

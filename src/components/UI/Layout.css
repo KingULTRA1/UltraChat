@@ -456,32 +456,148 @@
   }
   
   .settings-layout,
-  .profile-layout {
+  .profile-layout,
+  .groups-layout,
+  .live-comm-layout,
+  .multi-mode-layout {
     padding: var(--space-sm);
   }
 }
-  .header-center {
+
+/* Groups Layout */
+.groups-layout {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Live Communication Layout */
+.live-comm-layout {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Multi-Mode Layout */
+.multi-mode-layout {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Enhanced Navigation for New Views */
+.nav-btn[title*="Group"] {
+  background: linear-gradient(135deg, var(--color-accent-teal-ultra-light) 0%, var(--color-bg-secondary) 100%);
+}
+
+.nav-btn[title*="Live Communication"] {
+  background: linear-gradient(135deg, var(--color-accent-silver-ultra-light) 0%, var(--color-bg-secondary) 100%);
+}
+
+.nav-btn[title*="Group"]:hover,
+.nav-btn[title*="Live Communication"]:hover {
+  box-shadow: var(--shadow-glow-teal), var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+.nav-btn[title*="Group"].active {
+  background: linear-gradient(135deg, var(--color-accent-teal) 0%, var(--color-accent-teal-dark) 100%);
+  box-shadow: var(--shadow-glow-teal), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.nav-btn[title*="Live Communication"].active {
+  background: linear-gradient(135deg, var(--color-accent-silver) 0%, var(--color-accent-silver-dark) 100%);
+  box-shadow: var(--shadow-glow-silver), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Status Indicators for New Features */
+.crypto-status,
+.pending-status,
+.privacy-status {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  text-shadow: 0 0 8px currentColor;
+  filter: drop-shadow(0 0 4px currentColor);
+  transition: all 0.3s ease;
+}
+
+.crypto-status {
+  color: var(--color-warning);
+}
+
+.pending-status {
+  color: var(--color-accent);
+  animation: pendingPulse 1.5s ease-in-out infinite;
+}
+
+.privacy-status {
+  color: var(--color-success);
+}
+
+@keyframes pendingPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+/* Bottom Navigation Bar */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 60px;
+  background: var(--color-bg-primary);
+  border-top: 1px solid var(--color-border);
+  z-index: 1000;
+  padding: 0 10px;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+  padding: 5px 0;
+}
+
+.nav-item:hover {
+  color: var(--color-text-primary);
+}
+
+.nav-item.active {
+  color: var(--color-accent);
+  font-weight: bold;
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+  margin-bottom: 2px;
+}
+
+.nav-label {
+  font-size: 0.7rem;
+}
+
+/* Adjust main content to account for bottom nav */
+.layout-main {
+  padding-bottom: 60px;
+}
+
+/* Responsive design - hide bottom nav on larger screens */
+@media (min-width: 768px) {
+  .bottom-nav {
     display: none;
   }
   
-  .chat-sidebar {
-    position: absolute;
-    left: -320px;
-    z-index: 100;
-    height: 100%;
-    transition: left 0.3s ease;
-  }
-  
-  .chat-sidebar.open {
-    left: 0;
-  }
-  
-  .layout-footer {
-    padding: var(--space-xs) var(--space-md);
-    font-size: 0.65rem;
-  }
-  
-  .footer-center {
-    display: none;
+  .layout-main {
+    padding-bottom: 0;
   }
 }

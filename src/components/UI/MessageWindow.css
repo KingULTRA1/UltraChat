@@ -8,50 +8,57 @@
 
 .message-window-empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  background: var(--color-bg-primary);
+  padding: 20px;
+  text-align: center;
 }
 
 .empty-state {
-  text-align: center;
-  max-width: 400px;
-  padding: var(--space-xl);
+  max-width: 500px;
+  width: 100%;
 }
 
 .empty-icon {
   font-size: 4rem;
-  margin-bottom: var(--space-lg);
-  opacity: 0.5;
+  margin-bottom: 20px;
 }
 
-.empty-state h3 {
+.message-window-empty h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
   color: var(--color-text-primary);
-  margin-bottom: var(--space-md);
 }
 
-.empty-state p {
+.message-window-empty p {
+  font-size: 1rem;
   color: var(--color-text-secondary);
-  margin-bottom: var(--space-xl);
+  margin-bottom: 30px;
 }
 
 .features-list {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
 }
 
 .feature-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-md);
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
+  padding: 15px;
+  background: var(--color-bg-secondary);
+  border-radius: 12px;
+  min-width: 120px;
 }
 
 .feature-icon {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
+  margin-bottom: 8px;
 }
 
 /* Header */
@@ -539,6 +546,41 @@
   color: var(--color-accent-teal);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 136, 204, 0.2);
+}
+
+/* New Chat Button Styles */
+.new-chat-btn-large {
+  margin-top: 20px;
+  padding: 12px 24px;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.new-chat-btn-large:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.new-chat-btn-large:active {
+  transform: translateY(0);
+}
+
+.header-btn.new-chat-btn {
+  background: var(--color-accent);
+  color: white;
+  margin-right: 10px;
+}
+
+.header-btn.new-chat-btn:hover {
+  background: var(--color-accent-hover);
 }
 
 /* Responsive */
