@@ -144,3 +144,12 @@ dev_notes/
 scratch/
 experiments/
 playground/
+
+# ========================
+# UltraChat local-only files (should not be committed)
+# ========================
+*.bat
+*.sh
+ports.json
+port-config.json
+test-logs/
